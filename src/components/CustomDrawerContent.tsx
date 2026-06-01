@@ -1,12 +1,12 @@
 import { DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
 import React from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import {COLORS} from '../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 
 const CustomDrawerContent = (props: any) => {
   return (
-    <DrawerContentScrollView {...props} contentContainerStyle={{ flex: 1 }}>
+    <DrawerContentScrollView {...props} contentContainerStyle={{ flex: 1, paddingBottom: 120 }}>
       <View style={styles.header}>
         <View style={styles.avatar}>
           <Ionicons name="person" size={20} color={COLORS.primary} />
@@ -15,6 +15,12 @@ const CustomDrawerContent = (props: any) => {
       </View>
       <View style={{ flex: 1, paddingTop: 10 }}>
         <DrawerItemList {...props} />
+      </View>
+
+      <View style={styles.logoutWrap} pointerEvents="box-none">
+        <TouchableOpacity style={styles.logoutButton} onPress={() => props.navigation.closeDrawer()}>
+          <Text style={styles.logoutText}>Sair</Text>
+        </TouchableOpacity>
       </View>
     </DrawerContentScrollView>
   );
@@ -41,6 +47,21 @@ const styles = StyleSheet.create({
   name: {
     color: COLORS.white,
     fontSize: 18,
+    fontWeight: '600',
+  },
+  logoutWrap: {
+    position: 'absolute',
+    right: 16,
+    bottom: 16,
+  },
+  logoutButton: {
+    backgroundColor: COLORS.primary,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+  },
+  logoutText: {
+    color: COLORS.white,
     fontWeight: '600',
   },
 });
