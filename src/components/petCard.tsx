@@ -1,26 +1,40 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { COLORS } from '../constants/theme';
 
-// Definindo o que o card precisa receber
 interface PetCardProps {
   name: string;
+  photo: string;
   breed: string;
-  gender: string;
-  traits: string;
+  sex: string;
+  characteristics: Array<string>;
 }
 
-export default function PetCard({ name, breed, gender, traits }: PetCardProps) {
+export default function PetCard({ name, photo, breed, sex, characteristics }: PetCardProps) {
   return (
     <View style={styles.card}>
-      {/* Placeholder da Imagem (depois você troca pela prop de URL da imagem real) */}
-      <View style={styles.imagePlaceholder}>
-        <Text style={styles.imageText}>Foto do {name}</Text>
-      </View>
+      {photo ? (
+        <Image 
+          source={{ uri: photo }} 
+          style={styles.image} 
+          resizeMode="cover"
+        />
+      ) : (
+        <View style={styles.imagePlaceholder}>
+          <Text style={styles.imageText}>Sem foto</Text>
+        </View>
+      )}
       
       <View style={styles.infoContainer}>
         <Text style={styles.petName}>{name}</Text>
-        <Text style={styles.petDetails}>{breed} • {gender}</Text>
-        <Text style={styles.petTraits}>{traits}</Text>
+        <Text style={styles.petDetails}>{breed} • {sex}</Text>
+        
+        <Text style={styles.petTraits}>
+          {characteristics && characteristics.length > 0 
+            ? characteristics.join(' • ') 
+            : 'Sem características'}
+        </Text>
+
       </View>
 
       <TouchableOpacity style={styles.button}>
@@ -32,25 +46,29 @@ export default function PetCard({ name, breed, gender, traits }: PetCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.white,
     borderRadius: 10,
-    width: 200, // Largura fixa para caber no carrossel horizontal
+    width: 200,
     marginRight: 15,
-    elevation: 3, // Sombra no Android
-    shadowColor: '#000', // Sombra no iOS
+    elevation: 3,
+    shadowColor: COLORS.dark,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     overflow: 'hidden',
     marginBottom: 10,
   },
+  image: {
+    width: '100%',
+    height: 120,
+  },
   imagePlaceholder: {
     height: 120,
-    backgroundColor: '#E0E0E0',
+    backgroundColor: COLORS.grey,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  imageText: { color: '#888' },
+  imageText: { color: COLORS.textDark },
   infoContainer: {
     padding: 10,
     alignItems: 'center',
@@ -58,22 +76,22 @@ const styles = StyleSheet.create({
   petName: {
     fontWeight: 'bold',
     fontSize: 16,
-    color: '#333',
+    color: COLORS.textDark,
   },
   petDetails: {
     fontSize: 12,
-    color: '#666',
+    color: COLORS.textLight,
     marginTop: 4,
     textAlign: 'center',
   },
   petTraits: {
     fontSize: 12,
-    color: '#666',
+    color: COLORS.textLight,
     textAlign: 'center',
     marginBottom: 10,
   },
   button: {
-    backgroundColor: '#D95D39',
+    backgroundColor: COLORS.primary,
     padding: 10,
     borderBottomLeftRadius: 10,
     borderBottomRightRadius: 10,
