@@ -1,15 +1,41 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import Header from '../components/header';
 import Footer from '../components/footer';
 import PetCard from '../components/petCard';
+import { COLORS } from '../constants/theme';
+
+interface PetInfo {
+  id: string | number;
+  photo: string;
+  name: string;
+  breed: string;
+  sex: string;
+  characteristics: Array<string>;
+}
 
 export default function HomeScreen() {
-  const animaisDestaque = [
-    { id: '1', name: 'Pastor Alemão', breed: 'Pastor Alemão', gender: 'Macho', traits: 'Sociável • Calmo' },
-    { id: '2', name: 'Golden Retriever', breed: 'Golden', gender: 'Macho', traits: 'Dócil • Sociável' },
-    { id: '3', name: 'Poodle', breed: 'Poodle', gender: 'Fêmea', traits: 'Obediente • Silencioso' },
-  ];
+  const [animais, setAnimais] = useState<PetInfo[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchAnimals = async () => {
+    try {
+      console.log("Iniciando busca dos animais no back-end...");
+      const response = await fetch('http://127.0.0.1:8000/animais/');
+      
+      const data = await response.json();
+      console.log("Resposta do back-end:", data);
+      setAnimais(data);
+    } catch (error) {
+      console.error("Erro ao buscar os animais do back-end:", error);
+    } finally {
+      setLoading(false); 
+    }
+  };
+
+  useEffect(() => {
+    fetchAnimals();
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -32,19 +58,29 @@ export default function HomeScreen() {
 
         <Text style={styles.sectionTitle}>Em Destaque</Text>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.carouselContainer}
-        >
-          {animaisDestaque.map((pet) => (
-            <PetCard 
-              key={pet.id}
-              name={pet.name}
-              breed={pet.breed}
-              gender={pet.gender}
-              traits={pet.traits}
-            />
-          ))}
-        </ScrollView>
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={COLORS.primary} />
+            <Text style={styles.loadingText}>Buscando amiguinhos...</Text>
+          </View>
+        ) : (
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false} 
+            contentContainerStyle={styles.carouselContainer}
+          >
+            {animais.map((pet) => (
+              <PetCard
+                key={pet.id.toString()}
+                photo={pet.photo}
+                name={pet.name}
+                breed={pet.breed}
+                sex={pet.sex}
+                characteristics={pet.characteristics}
+              />
+            ))}
+          </ScrollView>
+        )}
 
         <Footer />
       </ScrollView>
@@ -53,27 +89,37 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    padding: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingText: {
+    marginTop: 10,
+    color: COLORS.textLight,
+    fontWeight: 'bold',
+  },
   container: {
     flex: 1,
-    backgroundColor: '#F9F6ED', // Fundo claro do site
+    backgroundColor: COLORS.background,
   },
   content: {
     flex: 1,
   },
   banner: {
-    backgroundColor: '#F3A88C', // Fundo salmão claro
+    backgroundColor: COLORS.secondary,
     padding: 30,
     justifyContent: 'center',
   },
   bannerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: 'white',
+    color: COLORS.white,
     marginBottom: 10,
   },
   bannerText: {
     fontSize: 14,
-    color: 'white',
+    color: COLORS.textLight,
     lineHeight: 20,
   },
   filterSection: {
@@ -82,7 +128,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   filterButton: {
-    backgroundColor: '#D95D39',
+    backgroundColor: COLORS.primary,
     paddingVertical: 8,
     paddingHorizontal: 20,
     borderRadius: 20,
@@ -94,7 +140,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: COLORS.textDark,
     marginLeft: 20,
     marginTop: 10,
     marginBottom: 15,
