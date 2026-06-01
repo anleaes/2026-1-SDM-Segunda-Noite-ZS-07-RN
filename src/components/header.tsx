@@ -1,19 +1,16 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SIZES } from '../constants/theme';
+import { COLORS } from '../constants/theme';
 
-// 1. Importar os ganchos de navegação
 import { useNavigation } from '@react-navigation/native';
 import { DrawerNavigationProp } from '@react-navigation/drawer';
 
 export default function Header() {
-  // 2. Inicializar a navegação
   const navigation = useNavigation<DrawerNavigationProp<any>>();
 
   return (
     <View style={styles.header}>
-      {/* 3. Adicionar o evento onPress para abrir o menu lateral */}
       <TouchableOpacity onPress={() => navigation.openDrawer()}>
         <Ionicons name="menu" size={28} color={COLORS.white} />
       </TouchableOpacity>
