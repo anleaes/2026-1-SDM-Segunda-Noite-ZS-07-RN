@@ -1,10 +1,12 @@
 import { DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
 import React from 'react';
-import { Image, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import {COLORS} from '../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
+import { useAuth } from '../context/AuthContext';
 
 const CustomDrawerContent = (props: any) => {
+  const { logout } = useAuth();
   return (
     <DrawerContentScrollView {...props} contentContainerStyle={{ flex: 1, paddingBottom: 120 }}>
       <View style={styles.header}>
@@ -18,7 +20,7 @@ const CustomDrawerContent = (props: any) => {
       </View>
 
       <View style={styles.logoutWrap} pointerEvents="box-none">
-        <TouchableOpacity style={styles.logoutButton} onPress={() => props.navigation.closeDrawer()}>
+        <TouchableOpacity style={styles.logoutButton} onPress={logout}>
           <Text style={styles.logoutText}>Sair</Text>
         </TouchableOpacity>
       </View>
