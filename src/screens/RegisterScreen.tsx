@@ -6,10 +6,10 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  useWindowDimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../constants/theme';
@@ -19,8 +19,30 @@ interface Props {
   onBack: () => void;
 }
 
+function parseApiError(raw: string): string {
+  try {
+    const obj = JSON.parse(raw);
+    const messages: string[] = [];
+    for (const key of Object.keys(obj)) {
+      const val = Array.isArray(obj[key]) ? obj[key].join(' ') : String(obj[key]);
+      const label: Record<string, string> = {
+        username: 'Usuário',
+        email: 'E-mail',
+        password: 'Senha',
+        first_name: 'Nome',
+        last_name: 'Sobrenome',
+      };
+      messages.push(`${label[key] ?? key}: ${val}`);
+    }
+    return messages.join('\n');
+  } catch {
+    return raw;
+  }
+}
+
 export default function RegisterScreen({ onBack }: Props) {
   const { register } = useAuth();
+  const { height } = useWindowDimensions();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [username, setUsername] = useState('');
@@ -29,17 +51,21 @@ export default function RegisterScreen({ onBack }: Props) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const isSmall = height < 700;
 
   const handleRegister = async () => {
     if (!firstName.trim() || !lastName.trim() || !username.trim() || !email.trim() || !password || !confirmPassword) {
-      Alert.alert('Atenção', 'Preencha todos os campos.');
+      setError('Preencha todos os campos.');
       return;
     }
     if (password !== confirmPassword) {
-      Alert.alert('Atenção', 'As senhas não coincidem.');
+      setError('As senhas não coincidem.');
       return;
     }
 
+    setError('');
     setLoading(true);
     try {
       await register({
@@ -50,7 +76,7 @@ export default function RegisterScreen({ onBack }: Props) {
         password,
       });
     } catch (e: any) {
-      Alert.alert('Erro', e.message ?? 'Erro ao criar conta.');
+      setError(parseApiError(e.message ?? 'Erro ao criar conta.'));
     } finally {
       setLoading(false);
     }
@@ -61,13 +87,20 @@ export default function RegisterScreen({ onBack }: Props) {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-        <View style={styles.card}>
-          <View style={styles.logoWrapper}>
-            <Ionicons name="paw" size={48} color={COLORS.primary} />
+      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+        <View style={[styles.card, isSmall && styles.cardSmall]}>
+          <View style={[styles.logoWrapper, isSmall && styles.logoWrapperSmall]}>
+            <Ionicons name="paw" size={isSmall ? 36 : 48} color={COLORS.primary} />
           </View>
-          <Text style={styles.title}>Criar conta</Text>
+          <Text style={[styles.title, isSmall && styles.titleSmall]}>Criar conta</Text>
           <Text style={styles.subtitle}>Preencha os dados para se registrar</Text>
+
+          {!!error && (
+            <View style={styles.errorBox}>
+              <Ionicons name="alert-circle-outline" size={16} color="#d32f2f" />
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          )}
 
           <View style={styles.inputWrapper}>
             <Ionicons name="person-outline" size={20} color={COLORS.textLight} style={styles.inputIcon} />
@@ -76,7 +109,7 @@ export default function RegisterScreen({ onBack }: Props) {
               placeholder="Nome"
               placeholderTextColor={COLORS.grey}
               value={firstName}
-              onChangeText={setFirstName}
+              onChangeText={v => { setFirstName(v); setError(''); }}
             />
           </View>
 
@@ -87,7 +120,7 @@ export default function RegisterScreen({ onBack }: Props) {
               placeholder="Sobrenome"
               placeholderTextColor={COLORS.grey}
               value={lastName}
-              onChangeText={setLastName}
+              onChangeText={v => { setLastName(v); setError(''); }}
             />
           </View>
 
@@ -99,7 +132,7 @@ export default function RegisterScreen({ onBack }: Props) {
               placeholderTextColor={COLORS.grey}
               autoCapitalize="none"
               value={username}
-              onChangeText={setUsername}
+              onChangeText={v => { setUsername(v); setError(''); }}
             />
           </View>
 
@@ -112,7 +145,7 @@ export default function RegisterScreen({ onBack }: Props) {
               autoCapitalize="none"
               keyboardType="email-address"
               value={email}
-              onChangeText={setEmail}
+              onChangeText={v => { setEmail(v); setError(''); }}
             />
           </View>
 
@@ -124,7 +157,7 @@ export default function RegisterScreen({ onBack }: Props) {
               placeholderTextColor={COLORS.grey}
               secureTextEntry={!showPassword}
               value={password}
-              onChangeText={setPassword}
+              onChangeText={v => { setPassword(v); setError(''); }}
             />
             <TouchableOpacity onPress={() => setShowPassword(v => !v)}>
               <Ionicons
@@ -143,7 +176,7 @@ export default function RegisterScreen({ onBack }: Props) {
               placeholderTextColor={COLORS.grey}
               secureTextEntry={!showPassword}
               value={confirmPassword}
-              onChangeText={setConfirmPassword}
+              onChangeText={v => { setConfirmPassword(v); setError(''); }}
             />
           </View>
 
@@ -174,11 +207,11 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 24,
+    padding: 16,
   },
   card: {
     width: '100%',
-    maxWidth: 380,
+    maxWidth: 400,
     backgroundColor: COLORS.white,
     borderRadius: 16,
     padding: 28,
@@ -188,9 +221,15 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 5,
   },
+  cardSmall: {
+    padding: 18,
+  },
   logoWrapper: {
     alignItems: 'center',
     marginBottom: 16,
+  },
+  logoWrapperSmall: {
+    marginBottom: 8,
   },
   title: {
     fontSize: 24,
@@ -198,11 +237,29 @@ const styles = StyleSheet.create({
     color: COLORS.dark,
     textAlign: 'center',
   },
+  titleSmall: {
+    fontSize: 20,
+  },
+  errorBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#fdecea',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 12,
+    gap: 6,
+  },
+  errorText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#d32f2f',
+  },
   subtitle: {
     fontSize: 14,
     color: COLORS.textLight,
     textAlign: 'center',
-    marginBottom: 28,
+    marginBottom: 16,
     marginTop: 4,
   },
   inputWrapper: {
@@ -212,7 +269,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.grey,
     borderRadius: 10,
     paddingHorizontal: 12,
-    marginBottom: 14,
+    marginBottom: 10,
     backgroundColor: COLORS.background,
   },
   inputIcon: {

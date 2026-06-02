@@ -30,7 +30,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       body: JSON.stringify({ username, password }),
     });
 
-    if (!response.ok) throw new Error('Usuário ou senha inválidos');
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      if (err?.username?.length) throw new Error('Usuário não encontrado.');
+      if (err?.password?.length) throw new Error('Senha incorreta.');
+      throw new Error('Usuário ou senha inválidos.');
+    }
 
     const data = await response.json();
     setToken(data.token);

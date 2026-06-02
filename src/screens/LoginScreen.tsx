@@ -6,9 +6,10 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
+  useWindowDimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../constants/theme';
@@ -20,22 +21,27 @@ interface Props {
 
 export default function LoginScreen({ onRegister }: Props) {
   const { login } = useAuth();
+  const { height } = useWindowDimensions();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+
+  const isSmall = height < 700;
 
   const handleLogin = async () => {
     if (!username.trim() || !password.trim()) {
-      Alert.alert('Atenção', 'Preencha usuário e senha.');
+      setError('Preencha o usuário e a senha.');
       return;
     }
 
+    setError('');
     setLoading(true);
     try {
       await login(username.trim(), password);
-    } catch {
-      Alert.alert('Erro', 'Usuário ou senha inválidos.');
+    } catch (e: any) {
+      setError(e.message ?? 'Usuário ou senha inválidos.');
     } finally {
       setLoading(false);
     }
@@ -46,59 +52,75 @@ export default function LoginScreen({ onRegister }: Props) {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <View style={styles.card}>
-        <View style={styles.logoWrapper}>
-          <Ionicons name="paw" size={48} color={COLORS.primary} />
-        </View>
-        <Text style={styles.title}>Bem-vindo!</Text>
-        <Text style={styles.subtitle}>Entre na sua conta para continuar</Text>
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={[styles.card, isSmall && styles.cardSmall]}>
+          <View style={[styles.logoWrapper, isSmall && styles.logoWrapperSmall]}>
+            <Ionicons name="paw" size={isSmall ? 36 : 48} color={COLORS.primary} />
+          </View>
+          <Text style={[styles.title, isSmall && styles.titleSmall]}>Bem-vindo!</Text>
+          <Text style={styles.subtitle}>
+            Use seu <Text style={styles.subtitleBold}>usuário</Text> e{' '}
+            <Text style={styles.subtitleBold}>senha</Text> para entrar
+          </Text>
 
-        <View style={styles.inputWrapper}>
-          <Ionicons name="person-outline" size={20} color={COLORS.textLight} style={styles.inputIcon} />
-          <TextInput
-            style={styles.input}
-            placeholder="Usuário"
-            placeholderTextColor={COLORS.grey}
-            autoCapitalize="none"
-            value={username}
-            onChangeText={setUsername}
-          />
-        </View>
+          {!!error && (
+            <View style={styles.errorBox}>
+              <Ionicons name="alert-circle-outline" size={16} color={COLORS.error ?? '#d32f2f'} />
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          )}
 
-        <View style={styles.inputWrapper}>
-          <Ionicons name="lock-closed-outline" size={20} color={COLORS.textLight} style={styles.inputIcon} />
-          <TextInput
-            style={styles.input}
-            placeholder="Senha"
-            placeholderTextColor={COLORS.grey}
-            secureTextEntry={!showPassword}
-            value={password}
-            onChangeText={setPassword}
-          />
-          <TouchableOpacity onPress={() => setShowPassword(v => !v)}>
-            <Ionicons
-              name={showPassword ? 'eye-off-outline' : 'eye-outline'}
-              size={20}
-              color={COLORS.textLight}
+          <View style={styles.inputWrapper}>
+            <Ionicons name="person-outline" size={20} color={COLORS.textLight} style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Usuário"
+              placeholderTextColor={COLORS.grey}
+              autoCapitalize="none"
+              value={username}
+              onChangeText={v => { setUsername(v); setError(''); }}
             />
+          </View>
+
+          <View style={styles.inputWrapper}>
+            <Ionicons name="lock-closed-outline" size={20} color={COLORS.textLight} style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Senha"
+              placeholderTextColor={COLORS.grey}
+              secureTextEntry={!showPassword}
+              value={password}
+              onChangeText={v => { setPassword(v); setError(''); }}
+            />
+            <TouchableOpacity onPress={() => setShowPassword(v => !v)}>
+              <Ionicons
+                name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                size={20}
+                color={COLORS.textLight}
+              />
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
+            {loading ? (
+              <ActivityIndicator color={COLORS.white} />
+            ) : (
+              <Text style={styles.buttonText}>Entrar</Text>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.registerButton} onPress={onRegister}>
+            <Text style={styles.registerText}>
+              Não tem uma conta?{' '}
+              <Text style={styles.registerLink}>Registre-se</Text>
+            </Text>
           </TouchableOpacity>
         </View>
-
-        <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
-          {loading ? (
-            <ActivityIndicator color={COLORS.white} />
-          ) : (
-            <Text style={styles.buttonText}>Entrar</Text>
-          )}
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.registerButton} onPress={onRegister}>
-          <Text style={styles.registerText}>
-            Não tem uma conta?{' '}
-            <Text style={styles.registerLink}>Registre-se</Text>
-          </Text>
-        </TouchableOpacity>
-      </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
@@ -107,13 +129,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+  scroll: {
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 24,
+    padding: 16,
   },
   card: {
     width: '100%',
-    maxWidth: 380,
+    maxWidth: 400,
     backgroundColor: COLORS.white,
     borderRadius: 16,
     padding: 28,
@@ -123,9 +148,15 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 5,
   },
+  cardSmall: {
+    padding: 20,
+  },
   logoWrapper: {
     alignItems: 'center',
     marginBottom: 16,
+  },
+  logoWrapperSmall: {
+    marginBottom: 10,
   },
   title: {
     fontSize: 24,
@@ -133,12 +164,34 @@ const styles = StyleSheet.create({
     color: COLORS.dark,
     textAlign: 'center',
   },
+  titleSmall: {
+    fontSize: 20,
+  },
   subtitle: {
     fontSize: 14,
     color: COLORS.textLight,
     textAlign: 'center',
-    marginBottom: 28,
+    marginBottom: 20,
     marginTop: 4,
+  },
+  subtitleBold: {
+    fontWeight: '600',
+    color: COLORS.dark,
+  },
+  errorBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fdecea',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 12,
+    gap: 6,
+  },
+  errorText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#d32f2f',
   },
   inputWrapper: {
     flexDirection: 'row',
@@ -147,7 +200,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.grey,
     borderRadius: 10,
     paddingHorizontal: 12,
-    marginBottom: 14,
+    marginBottom: 12,
     backgroundColor: COLORS.background,
   },
   inputIcon: {
@@ -155,7 +208,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    height: 48,
+    height: 46,
     color: COLORS.dark,
     fontSize: 15,
   },
@@ -165,7 +218,7 @@ const styles = StyleSheet.create({
     height: 50,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: 6,
   },
   buttonText: {
     color: COLORS.white,
@@ -174,7 +227,7 @@ const styles = StyleSheet.create({
   },
   registerButton: {
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 18,
   },
   registerText: {
     fontSize: 14,
