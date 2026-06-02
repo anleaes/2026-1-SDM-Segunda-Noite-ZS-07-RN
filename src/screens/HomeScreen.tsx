@@ -20,11 +20,9 @@ export default function HomeScreen() {
 
   const fetchAnimals = async () => {
     try {
-      console.log("Iniciando busca dos animais no back-end...");
       const response = await fetch('http://127.0.0.1:8000/animais/');
       
       const data = await response.json();
-      console.log("Resposta do back-end:", data);
       setAnimais(data);
     } catch (error) {
       console.error("Erro ao buscar os animais do back-end:", error);
@@ -77,6 +75,7 @@ export default function HomeScreen() {
                 breed={pet.breed}
                 sex={pet.sex}
                 characteristics={pet.characteristics}
+                isHome={true}
               />
             ))}
           </ScrollView>
