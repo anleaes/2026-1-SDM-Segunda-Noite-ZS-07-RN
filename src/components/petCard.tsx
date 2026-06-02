@@ -8,11 +8,12 @@ interface PetCardProps {
   breed: string;
   sex: string;
   characteristics: Array<string>;
+  isHome?: boolean;
 }
 
-export default function PetCard({ name, photo, breed, sex, characteristics }: PetCardProps) {
+export default function PetCard({ name, photo, breed, sex, characteristics, isHome }: PetCardProps) {
   return (
-    <View style={styles.card}>
+    <View style={[styles.cardBase, isHome ? styles.cardHome : styles.cardAnimals]}>
       {photo ? (
         <Image 
           source={{ uri: photo }} 
@@ -38,29 +39,36 @@ export default function PetCard({ name, photo, breed, sex, characteristics }: Pe
       </View>
 
       <TouchableOpacity style={styles.button}>
-        <Text style={styles.buttonText}>ADOTAR</Text>
+        <Text style={styles.buttonText}>VER MAIS</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
+  cardBase: {
     backgroundColor: COLORS.white,
     borderRadius: 10,
-    width: 200,
-    marginRight: 15,
     elevation: 3,
     shadowColor: COLORS.dark,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     overflow: 'hidden',
+  },
+  cardHome: {
+    width: 200,
+    marginRight: 15,
     marginBottom: 10,
+  },
+  cardAnimals: {
+    width: '45%',
+    marginRight: 15,
+    marginBottom: 15,
   },
   image: {
     width: '100%',
-    height: 120,
+    height: 100,
   },
   imagePlaceholder: {
     height: 120,
