@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
   logoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: 60,
+    marginLeft: 15,
   },
   logoText: {
     color: 'white',

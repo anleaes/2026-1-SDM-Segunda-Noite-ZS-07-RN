@@ -4,6 +4,7 @@ import React from 'react';
 import HomeScreen from '../screens/HomeScreen';
 import InfoAnimalScreen from '../screens/InfoAnimalScreen';
 import AnimalsScreen from '../screens/AnimalsScreen';
+import AdminScreen from '../screens/AdminScreen';
 import CustomDrawerContent from '../components/CustomDrawerContent';
 import {COLORS} from '../constants/theme';
 
@@ -11,6 +12,7 @@ export type DrawerParamList = {
   Home: undefined;
   InfoAnimalScreen: { animalId: string | number }; 
   Animais: undefined;
+  Admin: undefined;
 };
 
 const Drawer = createDrawerNavigator<DrawerParamList>();
@@ -48,6 +50,13 @@ const DrawerNavigator = () => {
         options={{
           drawerIcon: ({ color, size }) => <Ionicons name="paw-outline" size={size} color={color}  />,
           title: 'Animais',
+        }}
+      />
+      <Drawer.Screen
+        name="Admin"
+        component={AdminScreen}
+        options={{
+          drawerItemStyle: { display: 'none' },
         }}
       />
     </Drawer.Navigator>  

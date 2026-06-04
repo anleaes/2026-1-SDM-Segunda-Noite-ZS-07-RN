@@ -13,6 +13,8 @@ interface RegisterData {
 interface AuthContextData {
   isAuthenticated: boolean;
   token: string | null;
+  role: string | null;
+  isAdmin: boolean;
   login: (username: string, password: string) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => void;
@@ -22,6 +24,7 @@ const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
+  const [role, setRole] = useState<string | null>(null);
 
   const login = async (username: string, password: string) => {
     const response = await fetch(`${BASE_URL}/contas/login/`, {
@@ -34,6 +37,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const data = await response.json();
     setToken(data.token);
+    setRole(data.role);
   };
 
   const logout = () => setToken(null);
@@ -52,10 +56,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const result = await response.json();
     setToken(result.token);
+    setRole(result.role);
   };
 
+  const isAdmin = role === 'admin';
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated: token !== null, token, login, register, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated: token !== null, token, role, isAdmin, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

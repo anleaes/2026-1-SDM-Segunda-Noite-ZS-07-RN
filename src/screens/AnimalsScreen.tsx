@@ -5,6 +5,7 @@ import Header from '../components/header';
 import Footer from '../components/footer';
 import PetCard from '../components/petCard';
 import { COLORS } from '../constants/theme';
+import { useNavigation } from '@react-navigation/native';
 
 interface PetInfo {
   id: string | number;
@@ -12,10 +13,13 @@ interface PetInfo {
   name: string;
   breed: string;
   sex: string;
-  characteristics: Array<string>;
+  characteristic: Array<string>;
+  isHome?: boolean;
 }
 
 export default function AnimalsScreen() {
+  const navigation = useNavigation<any>();
+  
   const [animais, setAnimais] = useState<PetInfo[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -42,67 +46,72 @@ export default function AnimalsScreen() {
     <View style={styles.container}>
       <Header />
 
-      <ScrollView style={styles.content}>
-        <View style={styles.searchSection}>
-          <TouchableOpacity 
-            style={styles.filterToggleBtn}
-            onPress={() => setFiltrosAbertos(!filtrosAbertos)}
-          >
-            <Ionicons name="options-outline" size={24} color={COLORS.primary} />
-            <Text style={styles.filterToggleText}>Filtros</Text>
-            <Ionicons 
-              name={filtrosAbertos ? "chevron-up" : "chevron-down"}
-              size={20} 
-              color={COLORS.primary} 
-            />
-          </TouchableOpacity>
-        </View>
-
-        {filtrosAbertos && (
-          <View style={styles.dropdownMenu}>
-             <Text style={styles.dropdownTitle}>Filtrar Busca</Text>
-             <Text style={styles.dropdownSubtitle}>Espécie</Text>
-             <View style={styles.filterRow}>
-                <TouchableOpacity style={styles.filterOption}><Text>Cachorro</Text></TouchableOpacity>
-                <TouchableOpacity style={styles.filterOption}><Text>Gato</Text></TouchableOpacity>
-             </View>
-
-             <Text style={styles.dropdownSubtitle}>Porte</Text>
-             <View style={styles.filterRow}>
-                <TouchableOpacity style={styles.filterOption}><Text>Pequeno</Text></TouchableOpacity>
-                <TouchableOpacity style={styles.filterOption}><Text>Médio</Text></TouchableOpacity>
-                <TouchableOpacity style={styles.filterOption}><Text>Grande</Text></TouchableOpacity>
-             </View>
-             
-             <TouchableOpacity style={styles.applyFiltersBtn}>
-                <Text style={styles.applyFiltersText}>Aplicar Filtros</Text>
-             </TouchableOpacity>
+      <ScrollView style={styles.content} showsHorizontalScrollIndicator={false} contentContainerStyle={{flexGrow: 1}}>
+        <View style={{flex: 1}}>
+          <View style={styles.searchSection}>
+            <TouchableOpacity 
+              style={styles.filterToggleBtn}
+              onPress={() => setFiltrosAbertos(!filtrosAbertos)}
+            >
+              <Ionicons name="options-outline" size={24} color={COLORS.primary} />
+              <Text style={styles.filterToggleText}>Filtros</Text>
+              <Ionicons 
+                name={filtrosAbertos ? "chevron-up" : "chevron-down"}
+                size={20} 
+                color={COLORS.primary} 
+              />
+            </TouchableOpacity>
           </View>
-        )}
 
-        <View style={styles.resultsHeader}>
-           <Text style={styles.resultsText}>Mostrando {animais.length} animais</Text>
+          {filtrosAbertos && (
+            <View style={styles.dropdownMenu}>
+              <Text style={styles.dropdownTitle}>Filtrar Busca</Text>
+              <Text style={styles.dropdownSubtitle}>Espécie</Text>
+              <View style={styles.filterRow}>
+                  <TouchableOpacity style={styles.filterOption}><Text>Cachorro</Text></TouchableOpacity>
+                  <TouchableOpacity style={styles.filterOption}><Text>Gato</Text></TouchableOpacity>
+              </View>
+
+              <Text style={styles.dropdownSubtitle}>Porte</Text>
+              <View style={styles.filterRow}>
+                  <TouchableOpacity style={styles.filterOption}><Text>Pequeno</Text></TouchableOpacity>
+                  <TouchableOpacity style={styles.filterOption}><Text>Médio</Text></TouchableOpacity>
+                  <TouchableOpacity style={styles.filterOption}><Text>Grande</Text></TouchableOpacity>
+              </View>
+              
+              <TouchableOpacity style={styles.applyFiltersBtn}>
+                  <Text style={styles.applyFiltersText}>Aplicar Filtros</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          <View style={styles.resultsHeader}>
+            <Text style={styles.resultsText}>Mostrando {animais.length} animais</Text>
+          </View>
+
+          {loading ? (
+              <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={COLORS.primary} />
+              <Text style={styles.loadingText}>Buscando amiguinhos...</Text>
+              </View>
+          ) : (
+              <View style={styles.gridContainer}>
+                  {animais.slice(0,10).map((pet) => (
+                      <PetCard
+                          key={pet.id.toString()}
+                          photo={pet.photo}
+                          name={pet.name}
+                          breed={pet.breed}
+                          sex={pet.sex}
+                          characteristics={pet.characteristics}
+                          isHome={false}
+                          onPressButton={() => navigation.navigate('InfoAnimalScreen', { animalId: pet.id })}
+                      />
+                  ))}
+              </View>
+          )}
+
         </View>
-
-        {loading ? (
-            <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={COLORS.primary} />
-            <Text style={styles.loadingText}>Buscando amiguinhos...</Text>
-            </View>
-        ) : (
-            <View style={styles.gridContainer}>
-                {animais.slice(0,10).map((pet) => (
-                    <PetCard
-                        key={pet.id.toString()}
-                        photo={pet.photo}
-                        name={pet.name}
-                        breed={pet.breed}
-                        sex={pet.sex}
-                        characteristics={pet.characteristics}
-                    />
-                ))}
-            </View>
-        )}
 
         <Footer />
       </ScrollView>
@@ -112,10 +121,10 @@ export default function AnimalsScreen() {
 
 const styles = StyleSheet.create({
     gridContainer: {
-        flexDirection: 'row',       // Coloca os itens um ao lado do outro
-        flexWrap: 'wrap',           // Quando não couber mais na linha, joga para a linha de baixo
-        justifyContent: 'space-between', // Espalha os dois cards pros cantos
-        paddingHorizontal: 15,      // Dá um respiro nas bordas da tela
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
+        paddingHorizontal: 15,
         paddingTop: 15,
         paddingBottom: 20,
     },
@@ -136,7 +145,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fff0eb', // Tom muito claro do laranja principal
+    backgroundColor: '#fff0eb',
     padding: 10,
     borderRadius: 8,
     borderWidth: 1,

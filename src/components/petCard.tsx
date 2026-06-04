@@ -64,6 +64,10 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     marginBottom: 10,
   },
+  cardAnimals: {
+    width: '48%',
+    marginBottom: 15,
+  },
   image: {
     width: '100%',
     height: 120,

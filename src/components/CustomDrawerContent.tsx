@@ -3,10 +3,11 @@ import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import {COLORS} from '../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
+import Octicons from '@expo/vector-icons/Octicons';
 import { useAuth } from '../context/AuthContext';
 
 const CustomDrawerContent = (props: any) => {
-  const { logout } = useAuth();
+  const { logout, isAdmin } = useAuth();
   return (
     <DrawerContentScrollView {...props} contentContainerStyle={{ flex: 1, paddingBottom: 120 }}>
       <View style={styles.header}>
@@ -18,6 +19,14 @@ const CustomDrawerContent = (props: any) => {
       <View style={{ flex: 1, paddingTop: 10 }}>
         <DrawerItemList {...props} />
       </View>
+
+      {isAdmin && (
+        <View style={styles.managementWrap} pointerEvents="box-none">
+          <TouchableOpacity onPress={() => props.navigation.navigate('Admin')}>
+            <Octicons name="gear" size={25} color={COLORS.primary} />
+          </TouchableOpacity>
+        </View>
+      )}
 
       <View style={styles.logoutWrap} pointerEvents="box-none">
         <TouchableOpacity style={styles.logoutButton} onPress={logout}>
@@ -55,6 +64,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 16,
     bottom: 16,
+  },
+  managementWrap: {
+    position: 'absolute',
+    left: 16,
+    bottom: 20,
   },
   logoutButton: {
     backgroundColor: COLORS.primary,
