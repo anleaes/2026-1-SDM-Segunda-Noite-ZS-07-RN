@@ -5,6 +5,7 @@ import Header from '../components/header';
 import Footer from '../components/footer';
 import PetCard from '../components/petCard';
 import { COLORS } from '../constants/theme';
+import { useNavigation } from '@react-navigation/native';
 
 interface PetInfo {
   id: string | number;
@@ -12,10 +13,13 @@ interface PetInfo {
   name: string;
   breed: string;
   sex: string;
-  characteristics: Array<string>;
+  characteristic: Array<string>;
+  isHome?: boolean;
 }
 
 export default function AnimalsScreen() {
+  const navigation = useNavigation<any>();
+  
   const [animais, setAnimais] = useState<PetInfo[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -100,6 +104,8 @@ export default function AnimalsScreen() {
                           breed={pet.breed}
                           sex={pet.sex}
                           characteristics={pet.characteristics}
+                          isHome={false}
+                          onPressButton={() => navigation.navigate('InfoAnimalScreen', { animalId: pet.id })}
                       />
                   ))}
               </View>
