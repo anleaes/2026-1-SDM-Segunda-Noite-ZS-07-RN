@@ -40,7 +40,7 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <Header title='Adotar&Amar' showBack={false} />
+      <Header />
 
       <ScrollView style={styles.content}>
         <View style={styles.banner}>
