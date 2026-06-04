@@ -34,6 +34,8 @@ export default function AdminScreen({ navigation }: any) {
             {renderMenuButton("people-outline", "Gerenciar Usuários", () => {navigation.navigate("ConfUsers")})}
 
             {renderMenuButton("person-add-outline", "Cadastrar Funcionário", () => {navigation.navigate("CreateEmp")})}
+
+            {renderMenuButton("person-add-outline", "Cadastrar Cliente", () => {navigation.navigate("CreateAdp")})}
             
             {renderMenuButton("paw-outline", "Adicionar Animal", () => {navigation.navigate("")})}
             
