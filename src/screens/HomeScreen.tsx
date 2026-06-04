@@ -4,6 +4,7 @@ import Header from '../components/header';
 import Footer from '../components/footer';
 import PetCard from '../components/petCard';
 import { COLORS } from '../constants/theme';
+import { useNavigation } from '@react-navigation/native';
 
 interface PetInfo {
   id: string | number;
@@ -11,10 +12,12 @@ interface PetInfo {
   name: string;
   breed: string;
   sex: string;
-  characteristics: Array<string>;
+  characteristic: Array<string>;
 }
 
 export default function HomeScreen() {
+  const navigation = useNavigation<any>();
+
   const [animais, setAnimais] = useState<PetInfo[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -39,7 +42,7 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <Header />
+      <Header title='Adotar&Amar' showBack={false} />
 
       <ScrollView style={styles.content}>
         <View style={styles.banner}>
@@ -70,14 +73,15 @@ export default function HomeScreen() {
             contentContainerStyle={styles.carouselContainer}
           >
             {animais.map((pet) => (
-              <PetCard
-                key={pet.id.toString()}
-                photo={pet.photo}
-                name={pet.name}
-                breed={pet.breed}
-                sex={pet.sex}
-                characteristics={pet.characteristics}
-              />
+                <PetCard
+                  key={pet.id.toString()}
+                  photo={pet.photo}
+                  name={pet.name}
+                  breed={pet.breed}
+                  sex={pet.sex}
+                  characteristic={pet.characteristic ?? []}
+                  onPressButton={() => navigation.navigate('InfoAnimalScreen', { animalId: pet.id })}
+                />
             ))}
           </ScrollView>
         )}

@@ -7,10 +7,11 @@ interface PetCardProps {
   photo: string;
   breed: string;
   sex: string;
-  characteristics: Array<string>;
+  characteristic: Array<string>;
+  onPressButton: () => void;
 }
 
-export default function PetCard({ name, photo, breed, sex, characteristics }: PetCardProps) {
+export default function PetCard({ name, photo, breed, sex, characteristic, onPressButton }: PetCardProps) {
   return (
     <View style={styles.card}>
       {photo ? (
@@ -30,15 +31,15 @@ export default function PetCard({ name, photo, breed, sex, characteristics }: Pe
         <Text style={styles.petDetails}>{breed} • {sex}</Text>
         
         <Text style={styles.petTraits}>
-          {characteristics && characteristics.length > 0 
-            ? characteristics.join(' • ') 
+          {characteristic && characteristic.length > 0 
+            ? characteristic.join(' • ') 
             : 'Sem características'}
         </Text>
 
       </View>
 
-      <TouchableOpacity style={styles.button}>
-        <Text style={styles.buttonText}>ADOTAR</Text>
+      <TouchableOpacity style={styles.button} onPress={onPressButton}>
+        <Text style={styles.buttonText}>Ver mais</Text>
       </TouchableOpacity>
     </View>
   );
