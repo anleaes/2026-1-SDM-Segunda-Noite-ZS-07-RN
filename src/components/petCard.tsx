@@ -9,12 +9,16 @@ interface PetCardProps {
   sex: string;
   characteristic: Array<string>;
   onPressButton: () => void;
-  isHome?: boolean;
 }
 
-export default function PetCard({ name, photo, breed, sex, characteristic, isHome, onPressButton }: PetCardProps) {
+const mapSex: { [key: string]: string } = {
+    'M': 'Macho',
+    'F': 'Fêmea',
+  };
+
+export default function PetCard({ name, photo, breed, sex, characteristic, onPressButton }: PetCardProps) {
   return (
-    <View style={[styles.cardBase, isHome ? styles.cardHome : styles.cardAnimals]}>
+    <View style={styles.card}>
       {photo ? (
         <Image 
           source={{ uri: photo }} 
@@ -29,7 +33,7 @@ export default function PetCard({ name, photo, breed, sex, characteristic, isHom
       
       <View style={styles.infoContainer}>
         <Text style={styles.petName}>{name}</Text>
-        <Text style={styles.petDetails}>{breed} • {sex}</Text>
+        <Text style={styles.petDetails}>{breed} • {sex ? (mapSex[sex.toUpperCase()] ?? sex) : '-'}</Text>
         
         <Text style={styles.petTraits}>
           {characteristic && characteristic.length > 0 
@@ -47,19 +51,17 @@ export default function PetCard({ name, photo, breed, sex, characteristic, isHom
 }
 
 const styles = StyleSheet.create({
-  cardBase: {
+  card: {
     backgroundColor: COLORS.white,
     borderRadius: 10,
+    width: 200,
+    marginRight: 15,
     elevation: 3,
     shadowColor: COLORS.dark,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     overflow: 'hidden',
-  },
-  cardHome: {
-    width: 200,
-    marginRight: 15,
     marginBottom: 10,
   },
   cardAnimals: {
@@ -68,7 +70,7 @@ const styles = StyleSheet.create({
   },
   image: {
     width: '100%',
-    height: 100,
+    height: 120,
   },
   imagePlaceholder: {
     height: 120,
@@ -87,6 +89,7 @@ const styles = StyleSheet.create({
     color: COLORS.textDark,
   },
   petDetails: {
+    flex: 1,
     fontSize: 12,
     color: COLORS.textLight,
     marginTop: 4,
@@ -104,6 +107,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 10,
     borderBottomRightRadius: 10,
     alignItems: 'center',
+    marginTop: 'auto',
   },
   buttonText: {
     color: 'white',

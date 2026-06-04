@@ -30,6 +30,15 @@ export default function InfoAnimalScreen() {
       setLoading(false);
     }
   };
+  const mapSize: { [key: string]: string } = {
+    'P': 'Pequeno',
+    'M': 'Médio',
+    'G': 'Grande',
+  };
+  const mapSex: { [key: string]: string } = {
+    'M': 'Macho',
+    'F': 'Fêmea',
+  };
 
   useEffect(() => {
     if (animalId) {
@@ -105,7 +114,7 @@ export default function InfoAnimalScreen() {
 
         <View style={styles.meta}>
           <Text style={styles.title}>{pet.name}</Text>
-          <Text style={styles.subtitle}>{`${pet.sex ?? '-'} • ${calculateAge(pet.birth_date)} • Porto Alegre/RS`}</Text>
+          <Text style={styles.subtitle}>{`${pet.sex ? (mapSex[pet.sex.toUpperCase()] ?? pet.sex) : '-'} • ${calculateAge(pet.birth_date)} • Porto Alegre/RS`}</Text>
         </View>
 
         {/* Tags com renderização segura */}
@@ -120,6 +129,7 @@ export default function InfoAnimalScreen() {
         <View style={styles.infoBox}>
           <InfoRow label="Espécie" value={pet.species ?? '-'} />
           <InfoRow label="Raça" value={pet.breed ?? '-'} />
+          <InfoRow label="Porte" value={pet.size ? (mapSize[pet.size.toUpperCase()] ?? pet.size) : '-'} />
           <InfoRow label="No abrigo há" value={calculateAge(pet.listedAt)} />
         </View>
 
