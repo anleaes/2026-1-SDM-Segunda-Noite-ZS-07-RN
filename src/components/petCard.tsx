@@ -11,6 +11,11 @@ interface PetCardProps {
   onPressButton: () => void;
 }
 
+const mapSex: { [key: string]: string } = {
+    'M': 'Macho',
+    'F': 'Fêmea',
+  };
+
 export default function PetCard({ name, photo, breed, sex, characteristic, onPressButton }: PetCardProps) {
   return (
     <View style={styles.card}>
@@ -28,7 +33,7 @@ export default function PetCard({ name, photo, breed, sex, characteristic, onPre
       
       <View style={styles.infoContainer}>
         <Text style={styles.petName}>{name}</Text>
-        <Text style={styles.petDetails}>{breed} • {sex}</Text>
+        <Text style={styles.petDetails}>{breed} • {sex ? (mapSex[sex.toUpperCase()] ?? sex) : '-'}</Text>
         
         <Text style={styles.petTraits}>
           {characteristic && characteristic.length > 0 
@@ -80,6 +85,7 @@ const styles = StyleSheet.create({
     color: COLORS.textDark,
   },
   petDetails: {
+    flex: 1,
     fontSize: 12,
     color: COLORS.textLight,
     marginTop: 4,
@@ -97,6 +103,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 10,
     borderBottomRightRadius: 10,
     alignItems: 'center',
+    marginTop: 'auto',
   },
   buttonText: {
     color: 'white',
