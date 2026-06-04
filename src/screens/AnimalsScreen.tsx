@@ -103,7 +103,7 @@ export default function AnimalsScreen() {
                           name={pet.name}
                           breed={pet.breed}
                           sex={pet.sex}
-                          characteristics={pet.characteristics}
+                          characteristic={pet.characteristic}
                           isHome={false}
                           onPressButton={() => navigation.navigate('InfoAnimalScreen', { animalId: pet.id })}
                       />
