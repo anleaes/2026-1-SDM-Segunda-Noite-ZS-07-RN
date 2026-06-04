@@ -7,6 +7,7 @@ import AnimalsScreen from '../screens/AnimalsScreen';
 import AdminScreen from '../screens/AdminScreen';
 import ConfUsersScreen from '../screens/ConfUsersScreen';
 import CreateEmployeeScreen from '../screens/CreateEmployeeScreen';
+import CreateAdopterScreen from '../screens/CreateAdopterScreen';
 import CustomDrawerContent from '../components/CustomDrawerContent';
 import {COLORS} from '../constants/theme';
 
@@ -16,6 +17,7 @@ export type DrawerParamList = {
   Animais: undefined;
   ConfUsers: undefined;
   CreateEmp: undefined;
+  CreateAdp: undefined;
   Admin: undefined;
 };
 
@@ -73,6 +75,13 @@ const DrawerNavigator = () => {
       <Drawer.Screen
         name="CreateEmp"
         component={CreateEmployeeScreen}
+        options={{
+          drawerItemStyle: { display: 'none' },
+        }}
+      />
+      <Drawer.Screen
+        name="CreateAdp"
+        component={CreateAdopterScreen}
         options={{
           drawerItemStyle: { display: 'none' },
         }}

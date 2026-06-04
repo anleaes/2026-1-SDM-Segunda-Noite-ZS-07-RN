@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Alert, ActivityIndicator, Modal, TextInput} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Footer from '../components/footer';
 import { COLORS } from '../constants/theme';
 import { useAuth } from '../context/AuthContext';
@@ -9,6 +10,8 @@ interface Usuario {
   id: number;
   name: string;
   role: string;
+  address?: string;
+  username?: string;
 }
 
 export default function GerenciarUsuariosScreen({ navigation }: any) {
@@ -25,53 +28,82 @@ export default function GerenciarUsuariosScreen({ navigation }: any) {
 
   const [modalCargoVisible, setModalCargoVisible] = useState(false);
   const [modalSenhaVisible, setModalSenhaVisible] = useState(false);
+  const [modalEnderecoVisible, setModalEnderecoVisible] = useState(false);
+  const [modalUsernameVisible, setModalUsernameVisible] = useState(false);
   const [usuarioSelecionado, setUsuarioSelecionado] = useState<Usuario | null>(null);
 
   const [novoCargo, setNovoCargo] = useState('');
   const [novoNivel, setNovoNivel] = useState<'admin' | 'moderador'>('moderador');
   const [novaSenha, setNovaSenha] = useState('');
-
-  const listaClientes: Usuario[] = [
-    { id: 1, name: 'Fulano da Silva', role: 'Adotante comum (User)' },
-    { id: 2, name: 'Maria Oliveira', role: 'Adotante comum (User)' },
-    { id: 3, name: 'João Pedro Santos', role: 'Adotante comum (User)' },
-  ];
+  const [novoEndereco, setNovoEndereco] = useState('');
+  const [novoUsername, setNovoUsername] = useState('');
 
   const [listaFuncionarios, setListaFuncionarios] = useState<Usuario[]>([]);
-
+  const [listaClientes, setListaClientes] = useState<Usuario[]>([]);
+  
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch('http://127.0.0.1:8000/funcionarios/', {
-          headers: {
-            'Authorization': `Token ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
+        setLoading(true);
 
-        if (!res.ok) throw new Error("Sem permissão ou erro no servidor");
-
-        const data = await res.json();
-
-        console.log('funcionarios resgatados', data)
+        const headersConfig = {
+          'Authorization': `Token ${token}`,
+          'Content-Type': 'application/json'
+        };
         
-        const funcionariosFormatados = data.map((emp: any) => ({
+        const [respFuncionarios, respClientes] = await Promise.all([
+          fetch('http://127.0.0.1:8000/funcionarios/', { headers: headersConfig }),
+          fetch('http://127.0.0.1:8000/adotantes/', { headers: headersConfig }) 
+        ]);
+
+        if (!respFuncionarios.ok || !respClientes.ok) {
+          throw new Error("Sem permissão ou erro no servidor");
+        }
+
+        const dataFuncionarios = await respFuncionarios.json();
+        const dataClientes = await respClientes.json();
+
+        const funcionariosFormatados = dataFuncionarios.map((emp: any) => ({
           id: emp.register,
           name: `${emp.first_name} ${emp.last_name}`,
-          role: emp.position,
+          role: emp.position || 'Equipe',
+          username: emp.username || 'Sem usuário cadastrado',
         }));
         
-        const statusIniciais: { [key: number]: boolean } = {};
-        data.forEach((emp: any) => {
-            statusIniciais[emp.register] = emp.is_active;
+        const statusIniciaisFunc: { [key: number]: boolean } = {};
+        dataFuncionarios.forEach((emp: any) => {
+            statusIniciaisFunc[emp.register] = emp.is_active;
+        });
+
+        const clientesFormatados = dataClientes.map((cliente: any) => ({
+          id: cliente.register,
+          name: `${cliente.first_name} ${cliente.last_name}`,
+          role: 'user',
+          address: cliente.address || 'Endereço não cadastrado',
+          username: cliente.username || 'Sem usuário cadastrado',
+        }));
+
+        const statusLocal: { [key: number]: boolean } = {};
+        const statusEndereco: { [key: number]: boolean } = {};
+        const statusDados: { [key: number]: boolean } = {};
+
+        dataClientes.forEach((cliente: any) => {
+          statusLocal[cliente.register] = cliente.yard_security;
+          statusEndereco[cliente.register] = cliente.addressComprove;
+          statusDados[cliente.register] = cliente.checkedData;
         });
 
         setListaFuncionarios(funcionariosFormatados);
-        setAtivoStatus(statusIniciais);
+        setAtivoStatus(statusIniciaisFunc);
+
+        setListaClientes(clientesFormatados);
+        setlocalStatus(statusLocal);
+        setEnderecoStatus(statusEndereco);
+        setCheckedStatus(statusDados);
 
       } catch (error) {
         console.error(error);
-        Alert.alert("Erro", "Não foi possível buscar os funcionários.");
+        Alert.alert("Erro", "Não foi possível buscar os dados do servidor.");
       } finally {
         setLoading(false);
       }
@@ -83,7 +115,7 @@ export default function GerenciarUsuariosScreen({ navigation }: any) {
   const handleSave = async () => {
     setLoading(true);
     try {
-      const promessas = Object.keys(ativoStatus).map((idStr) => {
+      const promessasFuncionarios = Object.keys(ativoStatus).map((idStr) => {
         const id = Number(idStr);
         return fetch(`http://127.0.0.1:8000/funcionarios/${id}/`, {
           method: 'PATCH',
@@ -97,7 +129,23 @@ export default function GerenciarUsuariosScreen({ navigation }: any) {
         });
       });
 
-      await Promise.all(promessas);
+      const promessasClientes = Object.keys(localStatus).map((idStr) => {
+        const id = Number(idStr);
+        return fetch(`http://127.0.0.1:8000/adotantes/${id}/`, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Token ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            yard_security: localStatus[id],
+            addressComprove: enderecoStatus[id],
+            checkedData: checkedStatus[id]
+          })
+        });
+      });
+
+      await Promise.all([...promessasFuncionarios, ...promessasClientes]);
 
       navigation.navigate("Admin")
     } catch (error) {
@@ -146,8 +194,11 @@ export default function GerenciarUsuariosScreen({ navigation }: any) {
 
   const salvarNovaSenha = async () => {
     if (!usuarioSelecionado || !novaSenha) return;
+    
+    const endpoint = abaAtiva === 'clientes' ? 'adotantes' : 'funcionarios';
+
     try {
-      const res = await fetch(`http://127.0.0.1:8000/funcionarios/${usuarioSelecionado.id}/alterar_senha/`, {
+      const res = await fetch(`http://127.0.0.1:8000/${endpoint}/${usuarioSelecionado.id}/alterar_senha/`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Token ${token}`,
@@ -160,6 +211,79 @@ export default function GerenciarUsuariosScreen({ navigation }: any) {
         setModalSenhaVisible(false);
       } else {
         Alert.alert("Erro", "Sem permissão para alterar senha.");
+      }
+    } catch (error) {
+      Alert.alert("Erro", "Falha na comunicação com o servidor.");
+    }
+  };
+
+  const abrirModalEndereco = (user: Usuario) => {
+    setUsuarioSelecionado(user);
+    setNovoEndereco(user.address || '');
+    setModalEnderecoVisible(true);
+  };
+
+  const salvarNovoEndereco = async () => {
+    if (!usuarioSelecionado) return;
+    try {
+      const res = await fetch(`http://127.0.0.1:8000/adotantes/${usuarioSelecionado.id}/`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Token ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ address: novoEndereco })
+      });
+
+      if (res.ok) {
+        Alert.alert("Sucesso", "Endereço atualizado com sucesso!");
+        
+        setListaClientes(prevLista => 
+          prevLista.map(cliente => 
+            cliente.id === usuarioSelecionado.id ? { ...cliente, address: novoEndereco } : cliente
+          )
+        );
+        
+        setModalEnderecoVisible(false);
+      } else {
+        Alert.alert("Erro", "Não foi possível atualizar o endereço.");
+      }
+    } catch (error) {
+      Alert.alert("Erro", "Falha na comunicação com o servidor.");
+    }
+  };
+
+  const abrirModalUsername = (user: Usuario) => {
+    setUsuarioSelecionado(user);
+    setNovoUsername(user.username || '');
+    setModalUsernameVisible(true);
+  };
+
+  const salvarNovoUsername = async () => {
+    if (!usuarioSelecionado) return;
+
+    const endpoint = abaAtiva === 'clientes' ? 'adotantes' : 'funcionarios';
+
+    try {
+      const res = await fetch(`http://127.0.0.1:8000/${endpoint}/${usuarioSelecionado.id}/alterar_username/`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Token ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username: novoUsername })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        Alert.alert("Sucesso", "Nome de usuário do cliente atualizado!");
+        if (abaAtiva === 'clientes') {
+          setListaClientes(prev => prev.map(c => c.id === usuarioSelecionado.id ? { ...c, username: novoUsername } : c));
+        } else {
+          setListaFuncionarios(prev => prev.map(c => c.id === usuarioSelecionado.id ? { ...c, username: novoUsername } : c));
+        }
+        setModalUsernameVisible(false);
+      } else {
+        Alert.alert("Erro", data.error || "Não foi possível alterar o usuário.");
       }
     } catch (error) {
       Alert.alert("Erro", "Falha na comunicação com o servidor.");
@@ -240,6 +364,49 @@ export default function GerenciarUsuariosScreen({ navigation }: any) {
                     {isOpen && (
                       <View style={styles.dropdownContent}>
                         <View style={styles.divider} />
+
+                        <View style={{ paddingHorizontal: 12, paddingBottom: 10 }}>
+                          <Text style={{ fontSize: 12, color: COLORS.textLight, fontWeight: 'bold' }}>
+                            Usuário:
+                          </Text>
+                          <View style={{ marginVertical: 8 }}>
+                            <Text style={{ fontSize: 14, color: COLORS.textDark, fontWeight: '600' }}>
+                              @{user.username}
+                            </Text>
+                            
+                          </View>
+                          <View style={{ flexDirection: 'row', gap: 6, marginHorizontal: 'auto' }}>
+                            <TouchableOpacity style={styles.inlineButton} onPress={() => abrirModalUsername(user)}>
+                              <Text style={styles.inlineButtonText}>Alterar Usuário</Text>
+                            </TouchableOpacity>
+                            
+                            <TouchableOpacity 
+                              style={[styles.inlineButton, !isAdmin && { opacity: 0.5 }]} 
+                              onPress={() => abrirModalSenha(user)}
+                            >
+                              <Text style={styles.inlineButtonText}>Senha</Text>
+                            </TouchableOpacity>
+                          </View>
+                        </View>
+                        
+                        <View style={styles.divider} />
+
+                        <View style={{ paddingHorizontal: 12, paddingBottom: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <View style={{ flex: 1, paddingRight: 10 }}>
+                            <Text style={{ fontSize: 12, color: COLORS.textLight, fontWeight: 'bold' }}>
+                              Endereço Cadastrado:
+                            </Text>
+                            <Text style={{ fontSize: 14, color: COLORS.textDark, marginTop: 2 }}>
+                              {user.address}
+                            </Text>
+                          </View>
+
+                          <TouchableOpacity onPress={() => abrirModalEndereco(user)} style={{ padding: 5 }}>
+                            <MaterialCommunityIcons name="pencil-box" size={28} color={COLORS.primary} />
+                          </TouchableOpacity>
+                        </View>
+                        
+                        <View style={styles.divider} />
                         
                         {renderConfigRow(
                           "home-outline", 
@@ -306,6 +473,23 @@ export default function GerenciarUsuariosScreen({ navigation }: any) {
                           <View style={styles.dropdownContent}>
                             <View style={styles.divider} />
 
+                            <View style={{ paddingHorizontal: 12, paddingBottom: 10 }}>
+                              <Text style={{ fontSize: 12, color: COLORS.textLight, fontWeight: 'bold' }}>Usuário de Acesso:</Text>
+                              <View style={{ marginVertical: 8 }}>
+                                <Text style={{ fontSize: 14, color: COLORS.textDark, fontWeight: '600' }}>@{user.username}</Text>
+                              </View>
+                              <View style={{ flexDirection: 'row', gap: 6, marginHorizontal: 'auto' }}>
+                                <TouchableOpacity style={styles.inlineButton} onPress={() => abrirModalUsername(user)}>
+                                  <Text style={styles.inlineButtonText}>Alterar Usuário</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={[styles.inlineButton, !isAdmin && { opacity: 0.5 }]} onPress={() => abrirModalSenha(user)}>
+                                  <Text style={styles.inlineButtonText}>Resetar Senha</Text>
+                                </TouchableOpacity>
+                              </View>
+                            </View>
+                            
+                            <View style={styles.divider} />
+
                             {renderConfigRow("shield-outline", "Alterar Cargo / Nível", 
                                 <TouchableOpacity style={styles.inlineButton} onPress={() => abrirModalCargo(user)}>
                                     <Text style={styles.inlineButtonText}>Alterar</Text>
@@ -346,7 +530,7 @@ export default function GerenciarUsuariosScreen({ navigation }: any) {
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
             <Text style={styles.modalTitle}>Alterar Função</Text>
-            <Text style={styles.modalSubtitle}>Utilizador: {usuarioSelecionado?.name}</Text>
+            <Text style={styles.modalSubtitle}>Funcionário: {usuarioSelecionado?.name}</Text>
 
             <Text style={styles.inputLabel}>Nome do Cargo (ex: Veterinário)</Text>
             <TextInput style={styles.input} value={novoCargo} onChangeText={setNovoCargo} />
@@ -379,25 +563,61 @@ export default function GerenciarUsuariosScreen({ navigation }: any) {
           </View>
         </View>
       </Modal>
+      <Modal visible={modalEnderecoVisible} animationType="fade" transparent={true}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>Alterar Endereço</Text>
+            <Text style={styles.modalSubtitle}>Cliente: {usuarioSelecionado?.name}</Text>
+
+            <Text style={styles.inputLabel}>Novo Endereço</Text>
+            <TextInput 
+              style={styles.input} 
+              placeholder="Rua, Número, Bairro, Cidade..." 
+              value={novoEndereco} 
+              onChangeText={setNovoEndereco} 
+            />
+
+            <View style={styles.modalActions}>
+              <TouchableOpacity style={styles.modalCancel} onPress={() => setModalEnderecoVisible(false)}>
+                <Text style={styles.modalCancelText}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.modalSave} onPress={salvarNovoEndereco}>
+                <Text style={styles.modalSaveText}>Salvar Endereço</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
       <Modal visible={modalSenhaVisible} animationType="fade" transparent={true}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>Resetar Senha</Text>
-            <Text style={styles.modalSubtitle}>Defina uma nova senha para {usuarioSelecionado?.name}</Text>
-
-            <TextInput 
-              style={styles.input} 
-              placeholder="Digite a nova senha" 
-              secureTextEntry={true} 
-              value={novaSenha} 
-              onChangeText={setNovaSenha} 
-            />
-
+            <Text style={styles.modalTitle}>Redefinir Senha</Text>
+            <Text style={styles.modalSubtitle}>{abaAtiva === 'clientes' ? 'Cliente' : 'Funcionário'}: {usuarioSelecionado?.name}</Text>
+            <Text style={styles.inputLabel}>Nova Senha</Text>
+            <TextInput style={styles.input} placeholder="Digite a nova senha" secureTextEntry={true} value={novaSenha} onChangeText={setNovaSenha} />
             <View style={styles.modalActions}>
               <TouchableOpacity style={styles.modalCancel} onPress={() => setModalSenhaVisible(false)}>
                 <Text style={styles.modalCancelText}>Cancelar</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.modalSave} onPress={salvarNovaSenha}>
+                <Text style={styles.modalSaveText}>Confirmar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+      <Modal visible={modalUsernameVisible} animationType="fade" transparent={true}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>Alterar Nome de Utilizador</Text>
+            <Text style={styles.modalSubtitle}>{abaAtiva === 'clientes' ? 'Cliente' : 'Funcionário'}: {usuarioSelecionado?.name}</Text>
+            <Text style={styles.inputLabel}>Novo Utilizador (@):</Text>
+            <TextInput style={styles.input} autoCapitalize="none" value={novoUsername} onChangeText={setNovoUsername} />
+            <View style={styles.modalActions}>
+              <TouchableOpacity style={styles.modalCancel} onPress={() => setModalUsernameVisible(false)}>
+                <Text style={styles.modalCancelText}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.modalSave} onPress={salvarNovoUsername}>
                 <Text style={styles.modalSaveText}>Confirmar</Text>
               </TouchableOpacity>
             </View>
@@ -574,7 +794,7 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)', // Fundo escuro transparente
+    backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
