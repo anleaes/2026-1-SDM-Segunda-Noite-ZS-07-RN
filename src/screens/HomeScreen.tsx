@@ -39,48 +39,52 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <Header />
 
-      <ScrollView style={styles.content}>
-        <View style={styles.banner}>
-          <Text style={styles.bannerTitle}>Encontre seu{"\n"}melhor amigo aqui</Text>
-          <Text style={styles.bannerText}>
-            Temos diversos animais aguardando um lar cheio de amor.{"\n"}
-            Adotar é um ato de amor que transforma duas vidas.
-          </Text>
-        </View>
+      <ScrollView style={styles.content} showsHorizontalScrollIndicator={false} contentContainerStyle={{flexGrow: 1}}>
+        <View style={{flex: 1}}>
 
-        <View style={styles.filterSection}>
-          <TouchableOpacity style={styles.filterButton}>
-            <Text style={styles.filterButtonText}>Filtrar</Text>
-          </TouchableOpacity>
-        </View>
-
-        <Text style={styles.sectionTitle}>Em Destaque</Text>
-
-        {loading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={COLORS.primary} />
-            <Text style={styles.loadingText}>Buscando amiguinhos...</Text>
+          <View style={styles.banner}>
+            <Text style={styles.bannerTitle}>Encontre seu{"\n"}melhor amigo aqui</Text>
+            <Text style={styles.bannerText}>
+              Temos diversos animais aguardando um lar cheio de amor.{"\n"}
+              Adotar é um ato de amor que transforma duas vidas.
+            </Text>
           </View>
-        ) : (
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false} 
-            contentContainerStyle={styles.carouselContainer}
-          >
-            {animais.map((pet) => (
-              <PetCard
-                key={pet.id.toString()}
-                photo={pet.photo}
-                name={pet.name}
-                breed={pet.breed}
-                sex={pet.sex}
-                characteristics={pet.characteristics}
-                isHome={true}
-              />
-            ))}
-          </ScrollView>
-        )}
 
+          <View style={styles.filterSection}>
+            <TouchableOpacity style={styles.filterButton}>
+              <Text style={styles.filterButtonText}>Filtrar</Text>
+            </TouchableOpacity>
+          </View>
+
+          <Text style={styles.sectionTitle}>Em Destaque</Text>
+
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={COLORS.primary} />
+              <Text style={styles.loadingText}>Buscando amiguinhos...</Text>
+            </View>
+          ) : (
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false} 
+              contentContainerStyle={styles.carouselContainer}
+            >
+              {animais.map((pet) => (
+                <PetCard
+                  key={pet.id.toString()}
+                  photo={pet.photo}
+                  name={pet.name}
+                  breed={pet.breed}
+                  sex={pet.sex}
+                  characteristics={pet.characteristics}
+                  isHome={true}
+                />
+              ))}
+            </ScrollView>
+          )}
+
+        </View>
+      
         <Footer />
       </ScrollView>
     </View>

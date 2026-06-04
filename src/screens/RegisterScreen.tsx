@@ -61,7 +61,7 @@ export default function RegisterScreen({ onBack }: Props) {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" showsHorizontalScrollIndicator={false}>
         <View style={styles.card}>
           <View style={styles.logoWrapper}>
             <Ionicons name="paw" size={48} color={COLORS.primary} />
