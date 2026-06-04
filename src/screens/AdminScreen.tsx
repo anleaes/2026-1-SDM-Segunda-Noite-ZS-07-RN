@@ -7,10 +7,10 @@ import { COLORS} from '../constants/theme';
 
 export default function AdminScreen({ navigation }: any) {
 
-  const renderMenuButton = (iconName: keyof typeof Ionicons.glyphMap, label: string, targetScreen?: string) => (
+  const renderMenuButton = (iconName: keyof typeof Ionicons.glyphMap, label: string, onPress: () => void) => (
     <TouchableOpacity 
       style={styles.menuButton}
-      onPress={() => targetScreen && navigation.navigate(targetScreen)}
+      onPress={onPress}
     >
       <View style={styles.buttonLeftContent}>
         <Ionicons name={iconName} size={24} color={COLORS.primary} />
@@ -31,15 +31,17 @@ export default function AdminScreen({ navigation }: any) {
 
             <View style={styles.menuList}>
             
-            {renderMenuButton("people-outline", "Gerenciar Usuários", "GerenciarUsuariosScreen")}
+            {renderMenuButton("people-outline", "Gerenciar Usuários", () => {navigation.navigate("ConfUsers")})}
+
+            {renderMenuButton("person-add-outline", "Cadastrar Funcionário", () => {navigation.navigate("CreateEmp")})}
             
-            {renderMenuButton("paw-outline", "Adicionar Animal", "AdicionarAnimalScreen")}
+            {renderMenuButton("paw-outline", "Adicionar Animal", () => {navigation.navigate("")})}
             
-            {renderMenuButton("git-branch-outline", "Adicionar Raça", "AdicionarRacaScreen")}
+            {renderMenuButton("git-branch-outline", "Adicionar Raça", () => {navigation.navigate("")})}
             
-            {renderMenuButton("medkit-outline", "Adicionar Vacina", "AdicionarVacinaScreen")}
+            {renderMenuButton("medkit-outline", "Adicionar Vacina", () => {navigation.navigate("")})}
             
-            {renderMenuButton("shield-checkmark-outline", "Verificação de Adotantes", "VerificarAdotantesScreen")}
+            {renderMenuButton("shield-checkmark-outline", "Verificação de Adotantes", () => {navigation.navigate("")})}
 
             </View>
 
