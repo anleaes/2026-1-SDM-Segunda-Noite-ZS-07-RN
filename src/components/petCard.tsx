@@ -63,8 +63,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   cardAnimals: {
-    width: '45%',
-    marginRight: 15,
+    width: '48%',
     marginBottom: 15,
   },
   image: {
