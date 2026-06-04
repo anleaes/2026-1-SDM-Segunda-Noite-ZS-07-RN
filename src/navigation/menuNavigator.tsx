@@ -3,12 +3,14 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 import React from 'react';
 import HomeScreen from '../screens/HomeScreen';
 import InfoAnimalScreen from '../screens/InfoAnimalScreen';
+import AnimalsScreen from '../screens/AnimalsScreen';
 import CustomDrawerContent from '../components/CustomDrawerContent';
 import {COLORS} from '../constants/theme';
 
 export type DrawerParamList = {
   Home: undefined;
   InfoAnimalScreen: { animalId: string | number }; 
+  Animais: undefined;
 };
 
 const Drawer = createDrawerNavigator<DrawerParamList>();
@@ -36,9 +38,16 @@ const DrawerNavigator = () => {
         name="InfoAnimalScreen"
         component={InfoAnimalScreen}
         options={{
-          // Isso é a mágica: a tela existe na navegação, mas fica oculta no menu lateral
           drawerItemStyle: { display: 'none' }, 
           headerShown: false, 
+         }}
+       />
+       <Drawer.Screen
+        name="Animais"
+        component={AnimalsScreen}
+        options={{
+          drawerIcon: ({ color, size }) => <Ionicons name="paw-outline" size={size} color={color}  />,
+          title: 'Animais',
         }}
       />
     </Drawer.Navigator>  
