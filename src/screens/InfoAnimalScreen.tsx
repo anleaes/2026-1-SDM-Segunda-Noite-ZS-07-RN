@@ -5,12 +5,13 @@ import Tag from '../components/Tag';
 import InfoRow from '../components/InfoRow';
 import Header from '../components/header';
 import { COLORS } from '../constants/theme';
-import { useRoute } from '@react-navigation/native';
+import { useRoute, useNavigation } from '@react-navigation/native';
 
 export default function InfoAnimalScreen() {
   const route = useRoute();
   // Pega o ID que veio da navegação da HomeScreen
   const { animalId } = route.params as { animalId: string | number };
+  const navigation = useNavigation<any>();
   
   const [pet, setPet] = useState<any | null>(null);
   // O loading começa como true para mostrar o ActivityIndicator enquanto a API responde
@@ -143,7 +144,7 @@ export default function InfoAnimalScreen() {
         <TouchableOpacity 
           style={styles.adoptButton} 
           activeOpacity={0.8}
-          onPress={() => console.log('Iniciar adoção do', pet.name)} >
+          onPress={() => navigation.navigate('AdoptionForm', { animalId: pet.id, animalName: pet.name })}>
           <Text style={styles.adoptButtonText}>Quero Adotar</Text>
         </TouchableOpacity>
       </View>

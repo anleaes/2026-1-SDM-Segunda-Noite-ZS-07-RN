@@ -7,14 +7,14 @@ import Octicons from '@expo/vector-icons/Octicons';
 import { useAuth } from '../context/AuthContext';
 
 const CustomDrawerContent = (props: any) => {
-  const { logout, isAdmin } = useAuth();
+  const { logout, isAdmin, firstName } = useAuth();
   return (
     <DrawerContentScrollView {...props} contentContainerStyle={{ flex: 1, paddingBottom: 120 }}>
       <View style={styles.header}>
         <View style={styles.avatar}>
           <Ionicons name="person" size={20} color={COLORS.primary} />
         </View>
-        <Text style={styles.name}>Olá, Usuário!</Text>
+        <Text style={styles.name}>Olá, {firstName ?? 'Usuário'}!</Text>
       </View>
       <View style={{ flex: 1, paddingTop: 10 }}>
         <DrawerItemList {...props} />
