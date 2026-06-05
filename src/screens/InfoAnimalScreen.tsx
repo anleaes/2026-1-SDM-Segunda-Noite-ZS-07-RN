@@ -129,6 +129,7 @@ export default function InfoAnimalScreen() {
         <View style={styles.infoBox}>
           <InfoRow label="Espécie" value={pet.species ?? '-'} />
           <InfoRow label="Raça" value={pet.breed ?? '-'} />
+          <InfoRow label="Cor" value={pet.color ?? '-'} />
           <InfoRow label="Porte" value={pet.size ? (mapSize[pet.size.toUpperCase()] ?? pet.size) : '-'} />
           <InfoRow label="No abrigo há" value={calculateAge(pet.listedAt)} />
         </View>
@@ -136,6 +137,32 @@ export default function InfoAnimalScreen() {
         <View style={styles.about}>
           <Text style={styles.sectionTitle}>Sobre ele</Text>
           <Text style={styles.description}>{pet.characteristic?.join(', ') ?? pet.characteristic ?? 'Sem descrição fornecida.'}</Text>
+        </View>
+
+        <View style={styles.about}>
+          <Text style={styles.sectionTitle}>Vacinas</Text>
+          
+          {pet.vaccine_history && pet.vaccine_history.length > 0 ? (
+            pet.vaccine_history.map((evento: any, index: number) => (
+              <View key={`evento-${index}`}>
+                {evento.itens && evento.itens.map((item: any, idx: number) => (
+                  <View key={`vacina-${index}-${idx}`} style={{ marginBottom: 12 }}>
+                    {/* O componente InfoRow mantém o padrão do resto da tela */}
+                    <InfoRow 
+                      label={item.vaccine_info?.name ?? 'Vacina'} 
+                      value={evento.vaccinatedAt} 
+                    />
+                    {/* Descrição em fonte menor abaixo */}
+                    <Text style={styles.vaccineDescription}>
+                      {item.vaccine_info?.description ?? 'Sem descrição.'}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            ))
+          ) : (
+            <Text style={styles.description}>Nenhuma vacina registrada.</Text>
+          )}
         </View>
       </ScrollView>
 
@@ -192,5 +219,38 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     textTransform: 'uppercase', // Deixa a letra toda maiúscula para chamar atenção
+  },
+  vaccineSection: {
+    paddingHorizontal: 16,
+    marginTop: 12,
+    marginBottom: 20,
+  },
+  vaccineRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#f8f9fa',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: '#eee',
+  },
+  vaccineName: {
+    color: COLORS.textDark,
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  vaccineDate: {
+    color: '#888',
+    fontSize: 14,
+  },
+  vaccineDescription: {
+    fontSize: 12,
+    color: '#777',
+    marginTop: 2,
+    marginLeft: 4, // Alinha levemente com o texto do InfoRow
+    fontStyle: 'italic',
   },
 });
