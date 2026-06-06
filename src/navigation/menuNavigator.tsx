@@ -10,6 +10,7 @@ import CreateEmployeeScreen from '../screens/CreateEmployeeScreen';
 import CreateAdopterScreen from '../screens/CreateAdopterScreen';
 import AdoptionFormScreen from '../screens/AdoptionFormScreen';
 import AddVaccineScreen from '../screens/AddVaccineScreen';
+import AddBreedScreen from '../screens/AddBreedScreen';
 import CustomDrawerContent from '../components/CustomDrawerContent';
 import {COLORS} from '../constants/theme';
 
@@ -23,6 +24,7 @@ export type DrawerParamList = {
   Admin: undefined;
   AdoptionForm: { animalId?: string | number; animalName?: string };
   AddVaccine: undefined;
+  AddBreed: undefined;
 };
 
 const Drawer = createDrawerNavigator<DrawerParamList>();
@@ -100,6 +102,13 @@ const DrawerNavigator = () => {
       <Drawer.Screen
         name="AddVaccine"
         component={AddVaccineScreen}
+        options={{
+          drawerItemStyle: { display: 'none' },
+        }}
+      />
+      <Drawer.Screen
+        name="AddBreed"
+        component={AddBreedScreen}
         options={{
           drawerItemStyle: { display: 'none' },
         }}
