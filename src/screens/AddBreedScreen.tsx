@@ -49,7 +49,7 @@ export default function AddBreedScreen({ navigation }: any) {
 
         if (response.ok) {
             setName('');
-            setSpecie([]);
+            setSpecieId('');
             navigation.navigate('Admin')
         } else {
             Alert.alert('Erro ao cadastrar', resData.error || 'Verifique as informações fornecidas.');
