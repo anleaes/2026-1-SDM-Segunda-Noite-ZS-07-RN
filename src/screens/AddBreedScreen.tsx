@@ -4,18 +4,28 @@ import { Ionicons } from '@expo/vector-icons';
 import Footer from '../components/footer';
 import { COLORS } from '../constants/theme';
 import { useAuth } from '../context/AuthContext';
+import { useEffect } from 'react';
+import { Picker } from '@react-native-picker/picker';
 
-export default function AddVaccineScreen({ navigation }: any) {
+export default function AddBreedScreen({ navigation }: any) {
     const { token } = useAuth();
     const [loading, setLoading] = useState(false);
 
+    const [specie, setSpecie] = useState([]);
+    const [specieId, setSpecieId] = useState('');
     const [name, setName] = useState('');
-    const [description, setDescription] = useState('');
-    const [years_prevention, setYearsPrevention] = useState('');
-    const [manufacturer, setManufacturer] = useState('');
+
+    useEffect(() => {
+        fetch('http://127.0.0.1:8000/especies/', { // Ajuste a URL da sua API
+            headers: { 'Authorization': `Token ${token}` }
+        })
+        .then(res => res.json())
+        .then(data => setSpecie(data))
+        .catch(err => console.error("Erro ao buscar espécies", err));
+    }, []);
 
     const handleCadastrar = async () => {
-        if (!name.trim() || !description.trim() || !years_prevention.trim() || !manufacturer.trim()) {
+        if (!name.trim() || !specieId) {
         Alert.alert('Atenção', 'Por favor, preencha todos os campos obrigatórios.');
         return;
         }
@@ -23,7 +33,7 @@ export default function AddVaccineScreen({ navigation }: any) {
         setLoading(true);
         
         try {
-        const response = await fetch('http://127.0.0.1:8000/vacinas/', {
+        const response = await fetch('http://127.0.0.1:8000/racas/', {
             method: 'POST',
             headers: {
             'Authorization': `Token ${token}`,
@@ -31,9 +41,7 @@ export default function AddVaccineScreen({ navigation }: any) {
             },
             body: JSON.stringify({
             name: name.trim(),
-            description: description.trim(),
-            years_prevention: years_prevention.trim(),
-            manufacturer: manufacturer.trim(),
+            specie: specieId,
             }),
         });
 
@@ -41,9 +49,7 @@ export default function AddVaccineScreen({ navigation }: any) {
 
         if (response.ok) {
             setName('');
-            setDescription('');
-            setYearsPrevention('');
-            setManufacturer('');
+            setSpecie([]);
             navigation.navigate('Admin')
         } else {
             Alert.alert('Erro ao cadastrar', resData.error || 'Verifique as informações fornecidas.');
@@ -76,22 +82,33 @@ export default function AddVaccineScreen({ navigation }: any) {
           <View style={styles.customHeader}>
             <TouchableOpacity style={styles.headerLeft} onPress={() => navigation.navigate('Admin')}>
               <Ionicons name="arrow-back" size={26} color={COLORS.white} />
-              <Text style={styles.headerTitle}>Adicionar Vacina</Text>
+              <Text style={styles.headerTitle}>Adicionar Raça</Text>
             </TouchableOpacity>
           </View>
     
           <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
             <View style={styles.formCard}>
               
-              <Text style={styles.sectionTitle}>Dados da Vacina</Text>
-              {renderInput('medkit-outline', 'Nome da Vacina', name, setName)}
-              {renderInput('document-text-outline', 'Descrição', description, setDescription)}
-              {renderInput('calendar-outline', 'Anos de Prevenção', years_prevention, setYearsPrevention, false, 'numeric')}
-              {renderInput('business-outline', 'Fabricante', manufacturer, setManufacturer)}
+              <Text style={styles.sectionTitle}>Dados da Raça</Text>
+              {renderInput('paw-outline', 'Nome da Raça', name, setName)}
+              <View style={styles.inputWrapper}>
+                <Ionicons name="list-outline" size={20} color={COLORS.textLight} style={styles.inputIcon} />
+                <Picker
+                    selectedValue={specieId}
+                    onValueChange={(itemValue) => setSpecieId(itemValue)}
+                    style={[styles.pickerWrapper, styles.input, 
+                        { color: specieId === "" ? COLORS.grey : COLORS.textDark },
+                        { flex: 1 }]}
+                >   {specieId === "" && <Picker.Item label="Selecione uma espécie" value="" color="COLORS.grey" />}
+                    {specie.map((esp: any) => (
+                    <Picker.Item key={esp.id} label={esp.name} value={esp.id} color={COLORS.textDark}/>
+                    ))}
+                </Picker>
+              </View>
               <View style={styles.divider} />
               
               <TouchableOpacity style={styles.button} onPress={handleCadastrar} disabled={loading}>
-                {loading ? <ActivityIndicator color={COLORS.white} /> : <Text style={styles.buttonText}>Cadastrar Vacina</Text>}
+                {loading ? <ActivityIndicator color={COLORS.white} /> : <Text style={styles.buttonText}>Cadastrar Raça</Text>}
               </TouchableOpacity>
     
             </View>
@@ -158,7 +175,7 @@ inputWrapper: {
     borderRadius: 8, 
     paddingHorizontal: 12, 
     marginBottom: 14, 
-    backgroundColor: COLORS.background 
+    backgroundColor: COLORS.background
 },
 inputIcon: { 
     marginRight: 8 
@@ -199,4 +216,16 @@ buttonText: {
     fontSize: 16, 
     fontWeight: 'bold' 
 },
+pickerWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.background,
+    borderWidth: 0,
+    paddingHorizontal: 0,
+    height: 40,
+    marginTop: 0,
+  },
+  pickerText: {
+    color: COLORS.grey,
+  },
 });

@@ -39,7 +39,7 @@ export default function AdminScreen({ navigation }: any) {
             
             {renderMenuButton("paw-outline", "Adicionar Animal", () => {navigation.navigate("")})}
             
-            {renderMenuButton("git-branch-outline", "Adicionar Raça", () => {navigation.navigate("")})}
+            {renderMenuButton("git-branch-outline", "Adicionar Raça", () => {navigation.navigate("AddBreed")})}
             
             {renderMenuButton("medkit-outline", "Adicionar Vacina", () => {navigation.navigate("AddVaccine")})}
             
