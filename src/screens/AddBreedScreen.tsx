@@ -6,6 +6,8 @@ import { COLORS } from '../constants/theme';
 import { useAuth } from '../context/AuthContext';
 import { useEffect } from 'react';
 import { Picker } from '@react-native-picker/picker';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
 
 export default function AddBreedScreen({ navigation }: any) {
     const { token } = useAuth();
@@ -15,6 +17,12 @@ export default function AddBreedScreen({ navigation }: any) {
     const [specieId, setSpecieId] = useState('');
     const [name, setName] = useState('');
 
+    useFocusEffect(
+        useCallback(() => {
+            setName('');
+            setSpecieId('');
+        }, [])
+    );
     useEffect(() => {
         fetch('http://127.0.0.1:8000/especies/', { // Ajuste a URL da sua API
             headers: { 'Authorization': `Token ${token}` }

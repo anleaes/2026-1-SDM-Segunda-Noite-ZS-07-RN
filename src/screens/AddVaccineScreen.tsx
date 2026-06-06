@@ -4,6 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 import Footer from '../components/footer';
 import { COLORS } from '../constants/theme';
 import { useAuth } from '../context/AuthContext';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
 
 export default function AddVaccineScreen({ navigation }: any) {
     const { token } = useAuth();
@@ -13,6 +15,15 @@ export default function AddVaccineScreen({ navigation }: any) {
     const [description, setDescription] = useState('');
     const [years_prevention, setYearsPrevention] = useState('');
     const [manufacturer, setManufacturer] = useState('');
+
+    useFocusEffect(
+    useCallback(() => {
+        setName('');
+        setDescription('');
+        setYearsPrevention('');
+        setManufacturer('');
+    }, [])
+    );
 
     const handleCadastrar = async () => {
         if (!name.trim() || !description.trim() || !years_prevention.trim() || !manufacturer.trim()) {
