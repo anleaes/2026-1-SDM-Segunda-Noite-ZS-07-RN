@@ -58,6 +58,15 @@ export default function CriarFuncionarioScreen({ navigation }: any) {
       const resData = await response.json();
 
       if (response.ok) {
+        setUsername('');
+        setEmail('');
+        setPassword('');
+        setFirstName('');
+        setLastName('');
+        setCpf('');
+        setPosition('');
+        setBirthDate('');
+        setHireDate('');
         navigation.navigate('Admin')
       } else {
         Alert.alert('Erro ao cadastrar', resData.error || 'Verifique as informações fornecidas.');

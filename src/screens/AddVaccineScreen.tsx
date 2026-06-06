@@ -40,6 +40,10 @@ export default function AddVaccineScreen({ navigation }: any) {
         const resData = await response.json();
 
         if (response.ok) {
+            setName('');
+            setDescription('');
+            setYearsPrevention('');
+            setManufacturer('');
             navigation.navigate('Admin')
         } else {
             Alert.alert('Erro ao cadastrar', resData.error || 'Verifique as informações fornecidas.');
