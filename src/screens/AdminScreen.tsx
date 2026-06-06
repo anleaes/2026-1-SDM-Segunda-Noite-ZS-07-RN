@@ -41,7 +41,7 @@ export default function AdminScreen({ navigation }: any) {
             
             {renderMenuButton("git-branch-outline", "Adicionar Raça", () => {navigation.navigate("")})}
             
-            {renderMenuButton("medkit-outline", "Adicionar Vacina", () => {navigation.navigate("")})}
+            {renderMenuButton("medkit-outline", "Adicionar Vacina", () => {navigation.navigate("AddVaccine")})}
             
             {renderMenuButton("shield-checkmark-outline", "Verificação de Adotantes", () => {navigation.navigate("")})}
 
