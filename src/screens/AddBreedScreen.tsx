@@ -91,15 +91,17 @@ export default function AddBreedScreen({ navigation }: any) {
               
               <Text style={styles.sectionTitle}>Dados da Raça</Text>
               {renderInput('paw-outline', 'Nome da Raça', name, setName)}
-              <View style={[styles.inputWrapper, { marginBottom: 20 }]}>
+              <View style={styles.inputWrapper}>
+                <Ionicons name="list-outline" size={20} color={COLORS.textLight} style={styles.inputIcon} />
                 <Picker
                     selectedValue={specieId}
                     onValueChange={(itemValue) => setSpecieId(itemValue)}
-                    style={{ flex: 1 }}
-                >
-                    <Picker.Item label="Selecione uma espécie" value="" />
+                    style={[styles.pickerWrapper, styles.input, 
+                        { color: specieId === "" ? COLORS.grey : COLORS.textDark },
+                        { flex: 1 }]}
+                >   {specieId === "" && <Picker.Item label="Selecione uma espécie" value="" color="COLORS.grey" />}
                     {specie.map((esp: any) => (
-                    <Picker.Item key={esp.id} label={esp.name} value={esp.id} />
+                    <Picker.Item key={esp.id} label={esp.name} value={esp.id} color={COLORS.textDark}/>
                     ))}
                 </Picker>
               </View>
@@ -173,7 +175,7 @@ inputWrapper: {
     borderRadius: 8, 
     paddingHorizontal: 12, 
     marginBottom: 14, 
-    backgroundColor: COLORS.background 
+    backgroundColor: COLORS.background
 },
 inputIcon: { 
     marginRight: 8 
@@ -214,4 +216,16 @@ buttonText: {
     fontSize: 16, 
     fontWeight: 'bold' 
 },
+pickerWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.background,
+    borderWidth: 0,
+    paddingHorizontal: 0,
+    height: 40,
+    marginTop: 0,
+  },
+  pickerText: {
+    color: COLORS.grey,
+  },
 });

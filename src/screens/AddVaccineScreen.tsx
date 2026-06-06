@@ -76,7 +76,7 @@ export default function AddVaccineScreen({ navigation }: any) {
           <View style={styles.customHeader}>
             <TouchableOpacity style={styles.headerLeft} onPress={() => navigation.navigate('Admin')}>
               <Ionicons name="arrow-back" size={26} color={COLORS.white} />
-              <Text style={styles.headerTitle}>Adicionar Vacina (Vacina)</Text>
+              <Text style={styles.headerTitle}>Adicionar Vacina</Text>
             </TouchableOpacity>
           </View>
     
