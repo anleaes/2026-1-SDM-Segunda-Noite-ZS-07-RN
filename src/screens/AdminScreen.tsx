@@ -37,7 +37,7 @@ export default function AdminScreen({ navigation }: any) {
 
             {renderMenuButton("person-add-outline", "Cadastrar Cliente", () => {navigation.navigate("CreateAdp")})}
             
-            {renderMenuButton("paw-outline", "Adicionar Animal", () => {navigation.navigate("")})}
+            {renderMenuButton("paw-outline", "Adicionar Animal", () => {navigation.navigate("AddAnimal")})}
             
             {renderMenuButton("git-branch-outline", "Adicionar Raça", () => {navigation.navigate("AddBreed")})}
             

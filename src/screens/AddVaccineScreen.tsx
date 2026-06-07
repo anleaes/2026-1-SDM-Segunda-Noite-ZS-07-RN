@@ -55,6 +55,7 @@ export default function AddVaccineScreen({ navigation }: any) {
             setDescription('');
             setYearsPrevention('');
             setManufacturer('');
+            Alert.alert('Sucesso', 'Vacina cadastrada com sucesso!');
             navigation.navigate('Admin')
         } else {
             Alert.alert('Erro ao cadastrar', resData.error || 'Verifique as informações fornecidas.');
