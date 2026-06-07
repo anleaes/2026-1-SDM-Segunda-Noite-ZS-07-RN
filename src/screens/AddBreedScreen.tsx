@@ -58,6 +58,7 @@ export default function AddBreedScreen({ navigation }: any) {
         if (response.ok) {
             setName('');
             setSpecieId('');
+            Alert.alert('Sucesso', 'Raça cadastrada com sucesso!');
             navigation.navigate('Admin')
         } else {
             Alert.alert('Erro ao cadastrar', resData.error || 'Verifique as informações fornecidas.');

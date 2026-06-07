@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const BASE_URL = 'http://127.0.0.1:8000';
 
@@ -16,6 +17,7 @@ interface AuthContextData {
   role: string | null;
   isAdmin: boolean;
   firstName: string | null;
+  employeeId: number | null;
   login: (username: string, password: string) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => void;
@@ -27,6 +29,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
   const [role, setRole] = useState<string | null>(null);
   const [firstName, setFirstName] = useState<string | null>(null);
+  const [employeeId, setEmployeeId] = useState<number | null>(null);
 
   const login = async (username: string, password: string) => {
     const response = await fetch(`${BASE_URL}/contas/login/`, {
@@ -41,9 +44,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setToken(data.token);
     setRole(data.role);
     setFirstName(data.first_name ?? data.username ?? null);
+
+    setToken(data.token);
+    setEmployeeId(data.register); // Guarda o ID do funcionário logado
+    
+    // Salva no AsyncStorage para não deslogar ao fechar o app
+    await AsyncStorage.setItem('userToken', data.token);
+    await AsyncStorage.setItem('employeeId', String(data.register));
   };
 
-  const logout = () => { setToken(null); setFirstName(null); };
+  const logout = () => { setToken(null); setFirstName(null); setEmployeeId(null); };
 
   const register = async (data: RegisterData) => {
     const response = await fetch('http://127.0.0.1:8000/contas/novo-usuario/', {
@@ -66,7 +76,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const isAdmin = role === 'admin';
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated: token !== null, token, role, isAdmin, firstName, login, register, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated: token !== null, token, role, isAdmin, firstName, employeeId, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );
