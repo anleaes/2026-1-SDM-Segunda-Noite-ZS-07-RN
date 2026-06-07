@@ -6,6 +6,10 @@ import { COLORS } from '../constants/theme';
 import { useAuth } from '../context/AuthContext';
 import { Picker } from '@react-native-picker/picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as ImagePicker from 'expo-image-picker';
+import { Image } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
 //import VaccinationSection, { VacinaItemState } from '../components/VaccinationSection';
 
 export default function AddAnimalScreen({ navigation }: any) {
@@ -21,7 +25,7 @@ export default function AddAnimalScreen({ navigation }: any) {
   const [sterilized, setSterilized] = useState(false);
   const [adopted, setAdopted] = useState(false);
   const [selectedCharacteristics, setselectedCharacteristics] = useState<number[]>([]);
-  const [photo, setPhoto] = useState('');
+  const [photoUri, setPhotoUri] = useState<string | null>(null);
 
   const [specie, setSpecie] = useState([]);
   const [specieId, setSpecieId] = useState('');
@@ -42,6 +46,43 @@ export default function AddAnimalScreen({ navigation }: any) {
         setselectedCharacteristics(selectedCharacteristics.filter(item => item !== id));
     } else {
         setselectedCharacteristics([...selectedCharacteristics, id]);
+    }
+  };
+  
+  useFocusEffect(
+    useCallback(() => {
+        setName('');
+        setSpecieId('');
+        setBreedId('');
+        setBirthDate('');
+        setSex('');
+        setSize('');
+        setColor('');
+        setSterilized(false);
+        setAdopted(false);
+        setselectedCharacteristics([]);
+        setPhotoUri(null);
+    }, [])
+  );
+
+  const pickImage = async () => {
+  // Solicita permissão para acessar a galeria
+  const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  
+  if (permissionResult.granted === false) {
+    alert("Você precisa permitir o acesso à galeria para enviar uma foto!");
+    return;
+  }
+
+  const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true, // Permite cortar a foto em quadrado, se quiser
+        aspect: [4, 3],
+        quality: 0.8, // Compacta um pouco para não pesar no banco Oracle
+    });
+
+    if (!result.canceled) {
+        setPhotoUri(result.assets[0].uri); // Guarda o caminho local da imagem
     }
   };
 
@@ -139,7 +180,7 @@ export default function AddAnimalScreen({ navigation }: any) {
         setBirthDate('');
         setCharacteristics([]);
         setSterilized(false);
-        setPhoto('');
+        setPhotoUri(null);
         navigation.navigate('Admin')
       } else {
         Alert.alert('Erro ao cadastrar', resData.error || 'Verifique as informações fornecidas.');
@@ -271,6 +312,7 @@ export default function AddAnimalScreen({ navigation }: any) {
           </View>
           <View style={styles.divider} />
 
+          <Text style={styles.sectionTitle}>Informações Básicas</Text>        
           {renderInput('paw-outline', 'Nome', name, setName)}
           {renderInput('calendar-number-outline', 'Data de Nascimento', birthDate, setBirthDate, false, 'numeric')}
           {renderInput('color-palette-outline', 'Cor', color, setColor)}
@@ -309,8 +351,8 @@ export default function AddAnimalScreen({ navigation }: any) {
                 </TouchableOpacity>
             ))}
           </View>
-
           <View style={styles.divider} />
+
           <Text style={styles.sectionTitle}>Características</Text>
           <View style={styles.chipsContainer}>
             {characteristics.map((item: any) => {
@@ -367,6 +409,27 @@ export default function AddAnimalScreen({ navigation }: any) {
             //     stylesPai={styles}
             // />
             )}
+          <View style={styles.divider} />
+          
+          <Text style={styles.sectionTitle}>Foto do Animal</Text>
+          <View style={{ alignItems: 'center', margin: 10}}>
+            {photoUri ? (
+                // Se já escolheu a foto, mostra a prévia dela
+                <TouchableOpacity onPress={pickImage}>
+                <Image source={{ uri: photoUri }} style={{ width: 150, height: 150, borderRadius: 75, marginBottom: 10 }} />
+                <Text style={{ color: COLORS.primary, fontWeight: '600' }}>Alterar Foto</Text>
+                </TouchableOpacity>
+            ) : (
+                // Se não escolheu, mostra um botão cinza padrão
+                <TouchableOpacity 
+                style={[styles.inputWrapper, { justifyContent: 'center', height: 50, borderStyle: 'dashed' }]} 
+                onPress={pickImage}
+                >
+                <Ionicons name="camera-outline" size={30} color={COLORS.textLight} />
+                <Text style={{ color: COLORS.textLight, marginLeft: 10 }}>Selecionar Foto</Text>
+                </TouchableOpacity>
+            )}
+          </View>
 
           <TouchableOpacity style={styles.button} onPress={handleCadastrar} disabled={loading}>
             {loading ? <ActivityIndicator color={COLORS.white} /> : <Text style={styles.buttonText}>Cadastrar Animal</Text>}
