@@ -37,13 +37,16 @@ export default function AdminScreen({ navigation }: any) {
 
             {renderMenuButton("person-add-outline", "Cadastrar Cliente", () => {navigation.navigate("CreateAdp")})}
             
-            {renderMenuButton("paw-outline", "Adicionar Animal", () => {navigation.navigate("")})}
+            {renderMenuButton("paw-outline", "Adicionar Animal", () => {navigation.navigate("AddAnimal")})}
             
-            {renderMenuButton("git-branch-outline", "Adicionar Raça", () => {navigation.navigate("")})}
+            {renderMenuButton("git-branch-outline", "Adicionar Raça", () => {navigation.navigate("AddBreed")})}
             
-            {renderMenuButton("medkit-outline", "Adicionar Vacina", () => {navigation.navigate("")})}
+            {renderMenuButton("medkit-outline", "Adicionar Vacina", () => {navigation.navigate("AddVaccine")})}
             
             {renderMenuButton("shield-checkmark-outline", "Verificação de Adotantes", () => {navigation.navigate("AdoptionRequests")})}
+            {renderMenuButton("shield-checkmark-outline", "Adicionar Vacinação", () => {navigation.navigate("AddVaccination")})}
+            
+            {renderMenuButton("checkmark-circle-outline", "Verificação de Adotantes", () => {navigation.navigate("")})}
 
             </View>
 

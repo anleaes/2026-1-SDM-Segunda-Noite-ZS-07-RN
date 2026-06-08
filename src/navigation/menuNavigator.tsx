@@ -11,6 +11,10 @@ import CreateAdopterScreen from '../screens/CreateAdopterScreen';
 import AdoptionFormScreen from '../screens/AdoptionFormScreen';
 import MinhasSolicitacoesScreen from '../screens/MinhasSolicitacoesScreen';
 import AdoptionRequestsScreen from '../screens/AdoptionRequestsScreen';
+import AddVaccineScreen from '../screens/AddVaccineScreen';
+import AddBreedScreen from '../screens/AddBreedScreen';
+import AddAnimalScreen from '../screens/AddAnimalScreen';
+import AddVaccinationScreen from '../screens/AddVaccinationScreen';
 import CustomDrawerContent from '../components/CustomDrawerContent';
 import {COLORS} from '../constants/theme';
 import { useAuth } from '../context/AuthContext';
@@ -26,6 +30,10 @@ export type DrawerParamList = {
   AdoptionForm: { animalId?: string | number; animalName?: string };
   MinhasSolicitacoes: undefined;
   AdoptionRequests: undefined;
+  AddVaccine: undefined;
+  AddBreed: undefined;
+  AddAnimal: undefined;
+  AddVaccination: undefined;
 };
 
 const Drawer = createDrawerNavigator<DrawerParamList>();
@@ -117,6 +125,31 @@ const DrawerNavigator = () => {
           drawerItemStyle: isAdmin ? undefined : { display: 'none' },
           drawerIcon: ({ color, size }) => <Ionicons name="shield-checkmark-outline" size={size} color={color} />,
           title: 'Solicitações de Adoção',
+        name="AddVaccine"
+        component={AddVaccineScreen}
+        options={{
+          drawerItemStyle: { display: 'none' },
+        }}
+      />
+      <Drawer.Screen
+        name="AddBreed"
+        component={AddBreedScreen}
+        options={{
+          drawerItemStyle: { display: 'none' },
+        }}
+      />
+      <Drawer.Screen
+        name="AddAnimal"
+        component={AddAnimalScreen}
+        options={{
+          drawerItemStyle: { display: 'none' },
+        }}
+      />
+      <Drawer.Screen
+        name="AddVaccination"
+        component={AddVaccinationScreen}
+        options={{
+          drawerItemStyle: { display: 'none' },
         }}
       />
     </Drawer.Navigator>  

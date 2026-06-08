@@ -53,6 +53,16 @@ export default function CriarClienteScreen({ navigation }: any) {
       const resData = await response.json();
 
       if (response.ok) {
+        setUsername('');
+        setEmail('');
+        setPassword('');
+        setFirstName('');
+        setLastName('');
+        setCpf('');
+        setAddress('');
+        setYardSecurity(false);
+        setAddressComprove(false);
+        setCheckedData(false);
         navigation.navigate('Admin')
       } else {
         Alert.alert('Erro ao cadastrar', resData.error || 'Verifique as informações fornecidas.');
