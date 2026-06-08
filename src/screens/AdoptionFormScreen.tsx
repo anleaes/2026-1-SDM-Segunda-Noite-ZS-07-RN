@@ -11,7 +11,6 @@ import {
   ActivityIndicator,
   Alert,
   Switch,
-  Modal,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Footer from '../components/footer';
@@ -28,7 +27,6 @@ export default function AdoptionFormScreen({ navigation, route }: any) {
   const animalName = route?.params?.animalName ?? 'Animal';
 
   const [loading, setLoading] = useState(false);
-  const [policyModalVisible, setPolicyModalVisible] = useState(false);
 
   const [fullName, setFullName] = useState('');
   const [cpf, setCpf] = useState('');
@@ -58,8 +56,6 @@ export default function AdoptionFormScreen({ navigation, route }: any) {
   const [currentPetsDescription, setCurrentPetsDescription] = useState('');
   const [reasonForAdoption, setReasonForAdoption] = useState('');
   const [caretaker, setCaretaker] = useState('');
-
-  const [agreedToPolicy, setAgreedToPolicy] = useState(false);
 
   const formatCpf = (text: string) => {
     const digits = text.replace(/\D/g, '').slice(0, 11);
@@ -116,13 +112,23 @@ export default function AdoptionFormScreen({ navigation, route }: any) {
       return;
     }
 
-    if (!agreedToPolicy) {
-      Alert.alert('Atenção', 'Você precisa concordar com as políticas de adoção para prosseguir.');
-      return;
-    }
-
     setLoading(true);
     try {
+      const checkResponse = await fetch('http://127.0.0.1:8000/adocoes/minhas/', {
+        headers: { Authorization: `Token ${token}` },
+      });
+      if (checkResponse.ok) {
+        const minhas = await checkResponse.json();
+        const jaExiste = minhas.some(
+          (s: any) => String(s.animal) === String(animalId) && s.status !== 'rejected'
+        );
+        if (jaExiste) {
+          Alert.alert('Atenção', 'Você já possui uma solicitação ativa para este animal.');
+          setLoading(false);
+          return;
+        }
+      }
+
       const response = await fetch('http://127.0.0.1:8000/adocoes/', {
         method: 'POST',
         headers: {
@@ -130,22 +136,20 @@ export default function AdoptionFormScreen({ navigation, route }: any) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          animal_id: animalId,
+          animal: animalId,
           full_name: fullName.trim(),
           cpf: cpf.replace(/\D/g, ''),
           birth_date: birthDate.trim(),
           phone: phone.replace(/\D/g, ''),
           email: email.trim(),
           occupation: occupation.trim(),
-          address: {
-            cep: cep.replace(/\D/g, ''),
-            street: street.trim(),
-            number: number.trim(),
-            complement: complement.trim(),
-            neighborhood: neighborhood.trim(),
-            city: city.trim(),
-            state: state.trim(),
-          },
+          cep: cep.replace(/\D/g, ''),
+          street: street.trim(),
+          number: number.trim(),
+          complement: complement.trim(),
+          neighborhood: neighborhood.trim(),
+          city: city.trim(),
+          state: state.trim(),
           housing_type: housingType,
           ownership_type: ownershipType,
           has_yard: hasYard,
@@ -158,20 +162,28 @@ export default function AdoptionFormScreen({ navigation, route }: any) {
           current_pets_description: currentPetsDescription.trim(),
           reason_for_adoption: reasonForAdoption.trim(),
           caretaker: caretaker.trim(),
-          agreed_to_policy: agreedToPolicy,
         }),
       });
 
-      const resData = await response.json();
+      const text = await response.text();
 
       if (response.ok) {
-        Alert.alert('Sucesso!', 'Formulário de adoção enviado com sucesso. Entraremos em contato em breve.', [
-          { text: 'OK', onPress: () => navigation.navigate('Animais') },
-        ]);
-      } else {
-        Alert.alert('Erro', resData.error || 'Verifique as informações fornecidas.');
+        navigation.navigate('MinhasSolicitacoes');
+        Alert.alert('Sucesso!', 'Formulário de adoção enviado com sucesso. Entraremos em contato em breve.');
+        return;
       }
-    } catch {
+
+      let errorMessage = `Status ${response.status}`;
+      try {
+        const resData = JSON.parse(text);
+        errorMessage = JSON.stringify(resData, null, 2);
+      } catch {
+        errorMessage = text.length > 500 ? text.slice(0, 500) + '...' : text;
+      }
+      console.error('Erro no POST /adocoes/:', errorMessage);
+      Alert.alert('Erro', errorMessage);
+    } catch (err) {
+      console.error('Exceção no envio:', err);
       Alert.alert('Erro', 'Não foi possível conectar ao servidor.');
     } finally {
       setLoading(false);
@@ -359,43 +371,10 @@ export default function AdoptionFormScreen({ navigation, route }: any) {
           {renderInput('chatbox-outline', 'Por que você deseja adotar? *', reasonForAdoption, setReasonForAdoption, { multiline: true, numberOfLines: 4 })}
           {renderInput('person-circle-outline', 'Quem será o responsável pelos cuidados? *', caretaker, setCaretaker)}
 
-          <View style={styles.divider} />
-
-          <Text style={styles.sectionTitle}>
-            <Ionicons name="shield-checkmark-outline" size={16} color={COLORS.primary} /> Políticas de Adoção
-          </Text>
-
-          <View style={styles.policyBox}>
-            <Text style={styles.policyText}>
-              Ao adotar, você se compromete com o bem-estar, saúde e segurança do animal durante toda a sua vida.
-              {'\n\n'}• Manter as vacinas e vermifugações em dia.{'\n'}
-              • Não abandonar ou maltratar o animal em nenhuma circunstância.{'\n'}
-              • Permitir visitas de acompanhamento realizadas pela ONG.{'\n'}
-              • Comunicar qualquer mudança de endereço ou impossibilidade de manter o animal.{'\n'}
-              • Em caso de devolução, contatar a ONG antes de qualquer outra ação.
-            </Text>
-            <TouchableOpacity onPress={() => setPolicyModalVisible(true)}>
-              <Text style={styles.policyLink}>Ler política completa</Text>
-            </TouchableOpacity>
-          </View>
-
           <TouchableOpacity
-            style={styles.checkboxRow}
-            onPress={() => setAgreedToPolicy(!agreedToPolicy)}
-            activeOpacity={0.8}
-          >
-            <View style={[styles.checkbox, agreedToPolicy && styles.checkboxChecked]}>
-              {agreedToPolicy && <Ionicons name="checkmark" size={16} color={COLORS.white} />}
-            </View>
-            <Text style={styles.checkboxLabel}>
-              Li e concordo com as <Text style={styles.checkboxLabelBold}>políticas de adoção</Text> e me comprometo a cumpri-las integralmente. *
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.button, !agreedToPolicy && styles.buttonDisabled]}
+            style={styles.button}
             onPress={handleSubmit}
-            disabled={loading || !agreedToPolicy}
+            disabled={loading}
           >
             {loading
               ? <ActivityIndicator color={COLORS.white} />
@@ -411,48 +390,6 @@ export default function AdoptionFormScreen({ navigation, route }: any) {
 
         <Footer />
       </ScrollView>
-
-      <Modal
-        visible={policyModalVisible}
-        animationType="slide"
-        transparent
-        onRequestClose={() => setPolicyModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Política Completa de Adoção</Text>
-              <TouchableOpacity onPress={() => setPolicyModalVisible(false)}>
-                <Ionicons name="close" size={24} color={COLORS.textDark} />
-              </TouchableOpacity>
-            </View>
-            <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
-              <Text style={styles.modalText}>
-                {`TERMO DE RESPONSABILIDADE E ADOÇÃO CONSCIENTE\n\n`}
-                {`1. COMPROMISSO COM O BEM-ESTAR ANIMAL\n`}
-                {`O adotante se compromete a oferecer ao animal condições adequadas de vida, incluindo alimentação balanceada, água limpa, abrigo seguro e enriquecimento ambiental.\n\n`}
-                {`2. CUIDADOS VETERINÁRIOS\n`}
-                {`O adotante deverá manter o calendário de vacinas, vermifugações e visitas ao veterinário em dia, além de castrar o animal caso ainda não tenha sido realizado.\n\n`}
-                {`3. PROIBIÇÃO DE MAUS-TRATOS E ABANDONO\n`}
-                {`É expressamente proibido maltratar, negligenciar ou abandonar o animal. Em caso de descumprimento, o animal poderá ser recolhido pela ONG e medidas legais poderão ser tomadas (Lei Federal nº 9.605/98 — Lei de Crimes Ambientais).\n\n`}
-                {`4. VEDAÇÃO À TRANSFERÊNCIA SEM AUTORIZAÇÃO\n`}
-                {`O adotante não poderá transferir a guarda, vender, rifar ou doar o animal a terceiros sem autorização prévia e por escrito da ONG.\n\n`}
-                {`5. VISITAS DE ACOMPANHAMENTO\n`}
-                {`A ONG reserva-se o direito de realizar visitas de acompanhamento para verificar as condições de vida do animal, com agendamento prévio.\n\n`}
-                {`6. COMUNICAÇÃO OBRIGATÓRIA\n`}
-                {`Qualquer mudança relevante (endereço, condição financeira, impossibilidade de manter o animal) deverá ser comunicada à ONG imediatamente.\n\n`}
-                {`7. DEVOLUÇÃO DO ANIMAL\n`}
-                {`Em caso de necessidade de devolução, o adotante deve entrar em contato com a ONG antes de qualquer outra ação, para que o animal retorne ao abrigo com segurança.\n\n`}
-                {`8. ACEITAÇÃO DOS TERMOS\n`}
-                {`Ao assinar/confirmar este formulário, o adotante declara estar ciente de todas as responsabilidades e aceita os termos aqui descritos, com plena capacidade civil.\n`}
-              </Text>
-            </ScrollView>
-            <TouchableOpacity style={styles.modalButton} onPress={() => { setAgreedToPolicy(true); setPolicyModalVisible(false); }}>
-              <Text style={styles.modalButtonText}>Concordo com os termos</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
     </KeyboardAvoidingView>
   );
 }
