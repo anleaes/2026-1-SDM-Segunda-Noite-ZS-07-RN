@@ -9,12 +9,15 @@ import ConfUsersScreen from '../screens/ConfUsersScreen';
 import CreateEmployeeScreen from '../screens/CreateEmployeeScreen';
 import CreateAdopterScreen from '../screens/CreateAdopterScreen';
 import AdoptionFormScreen from '../screens/AdoptionFormScreen';
+import MinhasSolicitacoesScreen from '../screens/MinhasSolicitacoesScreen';
+import AdoptionRequestsScreen from '../screens/AdoptionRequestsScreen';
 import AddVaccineScreen from '../screens/AddVaccineScreen';
 import AddBreedScreen from '../screens/AddBreedScreen';
 import AddAnimalScreen from '../screens/AddAnimalScreen';
 import AddVaccinationScreen from '../screens/AddVaccinationScreen';
 import CustomDrawerContent from '../components/CustomDrawerContent';
 import {COLORS} from '../constants/theme';
+import { useAuth } from '../context/AuthContext';
 
 export type DrawerParamList = {
   Home: undefined;
@@ -25,6 +28,8 @@ export type DrawerParamList = {
   CreateAdp: undefined;
   Admin: undefined;
   AdoptionForm: { animalId?: string | number; animalName?: string };
+  MinhasSolicitacoes: undefined;
+  AdoptionRequests: undefined;
   AddVaccine: undefined;
   AddBreed: undefined;
   AddAnimal: undefined;
@@ -34,6 +39,7 @@ export type DrawerParamList = {
 const Drawer = createDrawerNavigator<DrawerParamList>();
 
 const DrawerNavigator = () => {
+  const { isAdmin } = useAuth();
   return (
     <Drawer.Navigator
       initialRouteName="Home"
@@ -104,6 +110,21 @@ const DrawerNavigator = () => {
         }}
       />
       <Drawer.Screen
+        name="MinhasSolicitacoes"
+        component={MinhasSolicitacoesScreen}
+        options={{
+          drawerItemStyle: isAdmin ? { display: 'none' } : undefined,
+          drawerIcon: ({ color, size }) => <Ionicons name="document-text-outline" size={size} color={color} />,
+          title: 'Minhas Solicitações',
+        }}
+      />
+      <Drawer.Screen
+        name="AdoptionRequests"
+        component={AdoptionRequestsScreen}
+        options={{
+          drawerItemStyle: isAdmin ? undefined : { display: 'none' },
+          drawerIcon: ({ color, size }) => <Ionicons name="shield-checkmark-outline" size={size} color={color} />,
+          title: 'Solicitações de Adoção',
         name="AddVaccine"
         component={AddVaccineScreen}
         options={{
