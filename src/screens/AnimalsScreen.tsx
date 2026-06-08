@@ -11,7 +11,7 @@ interface PetInfo {
   id: string | number;
   photo: string;
   name: string;
-  breed: string;
+  breed_name: string;
   sex: string;
   characteristic: Array<string>;
   isHome?: boolean;
@@ -101,7 +101,7 @@ export default function AnimalsScreen() {
                           key={pet.id.toString()}
                           photo={pet.photo}
                           name={pet.name}
-                          breed={pet.breed}
+                          breed_name={pet.breed_name}
                           sex={pet.sex}
                           characteristic={pet.characteristic}
                           isHome={false}

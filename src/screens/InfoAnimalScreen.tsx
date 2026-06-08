@@ -129,7 +129,7 @@ export default function InfoAnimalScreen() {
 
         <View style={styles.infoBox}>
           <InfoRow label="Espécie" value={pet.species ?? '-'} />
-          <InfoRow label="Raça" value={pet.breed ?? '-'} />
+          <InfoRow label="Raça" value={pet.breed_name ?? '-'} />
           <InfoRow label="Cor" value={pet.color ?? '-'} />
           <InfoRow label="Porte" value={pet.size ? (mapSize[pet.size.toUpperCase()] ?? pet.size) : '-'} />
           <InfoRow label="No abrigo há" value={calculateAge(pet.listedAt)} />

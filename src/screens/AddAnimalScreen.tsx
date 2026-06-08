@@ -57,21 +57,22 @@ export default function AddAnimalScreen({ navigation }: any) {
     return dataBR;
   };
 
-//   useFocusEffect(
-//     useCallback(() => {
-//         setName('');
-//         setSpecieId('');
-//         setBreedId('');
-//         setBirthDate('');
-//         setSex('');
-//         setSize('');
-//         setColor('');
-//         setSterilized(false);
-//         setAdopted(false);
-//         setselectedCharacteristics([]);
-//         setPhotoUri(null);
-//     }, [])
-//   );
+  useFocusEffect(
+    useCallback(() => {
+        setName('');
+        setSpecieId('');
+        setBreedId('');
+        setBirthDate('');
+        setSex('');
+        setSize('');
+        setColor('');
+        setSterilized(false);
+        setAdopted(false);
+        setselectedCharacteristics([]);
+        setVaccinated(false);
+        setPhotoUri(null);
+    }, [])
+  );
 
   const pickImage = async () => {
   // Solicita permissão para acessar a galeria
@@ -84,13 +85,13 @@ export default function AddAnimalScreen({ navigation }: any) {
 
   const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ['images'],
-        allowsEditing: true, // Permite cortar a foto em quadrado, se quiser
+        allowsEditing: true, 
         aspect: [4, 3],
-        quality: 0.8, // Compacta um pouco para não pesar no banco Oracle
+        quality: 0.8,
     });
 
     if (!result.canceled) {
-        setPhotoUri(result.assets[0].uri); // Guarda o caminho local da imagem
+        setPhotoUri(result.assets[0].uri); 
     }
   };
 
@@ -124,9 +125,6 @@ export default function AddAnimalScreen({ navigation }: any) {
   }, [specieId]);
 
   const handleCadastrar = async () => {
-    console.log("=================== INÍCIO DO CADASTRO ===================");
-    console.log("Estado de isVaccinated no clique:", vaccinated);
-    console.log("Lista de vacinas no estado (vaccinesApplied):", vaccinesApplied);
     if (!name.trim() || !breedId || !sex.trim() || !size.trim()
         || !color.trim() || !birthDate.trim() || !characteristics || !photoUri) {
       console.log("Campos obrigatórios faltando:", { name, breedId, sex, size, 
@@ -203,24 +201,24 @@ export default function AddAnimalScreen({ navigation }: any) {
       });
 
       if (responseAnimal.ok) {
-        // setName('');
-        // setSpecie([]);
-        // setBreedId('');
-        // setSex('');
-        // setSize('');
-        // setColor('');
-        // setBirthDate('');
-        // setCharacteristics([]);
-        // setSterilized(false);
-        // setPhotoUri(null);
+        setName('');
+        setSpecie([]);
+        setBreedId('');
+        setSex('');
+        setSize('');
+        setColor('');
+        setBirthDate('');
+        setCharacteristics([]);
+        setSterilized(false);
+        setPhotoUri(null);
         console.log("Sucesso no cadastro:");
       } else {
         const errData = await responseAnimal.json();
         console.log("============== ERRO DO DJANGO ==============");
         console.log(errData);
         console.log("============================================");
-        //alert(`Erro: ${JSON.stringify(errData)}`);
-        //Alert.alert('Erro ao cadastrar', resData.error || 'Verifique as informações fornecidas.');
+        alert(`Erro: ${JSON.stringify(errData)}`);
+        Alert.alert('Erro ao cadastrar', errData.error || 'Verifique as informações fornecidas.');
       }
 
       console.log("pegando dados do animal");
@@ -233,8 +231,8 @@ export default function AddAnimalScreen({ navigation }: any) {
         const vaccinationPayload = {
             vaccinatedAt: dataDeHoje,
             weight_at: weightAt ? parseFloat(weightAt) : null,
-            animal: newAnimalId, // ID que o banco acabou de retornar do animal
-            employee: loggedEmployeeId,   // ID do context que corrigimos no primeiro passo
+            animal: newAnimalId, 
+            employee: loggedEmployeeId, 
         };
         console.log("Enviando payload de Vaccination:", vaccinationPayload);
         const responseVaccination = await fetch('http://127.0.0.1:8000/vacinacoes/', {
@@ -263,10 +261,10 @@ export default function AddAnimalScreen({ navigation }: any) {
 
         for (const vacina of vaccinesApplied) {
             const vaccineItemPayload = {
-            expiration_date: converterDataParaDjango(dataValidade), // Data de validade 1 ano a partir de hoje
+            expiration_date: converterDataParaDjango(dataValidade), 
             dosage: vacina.dosage.trim(),
-            vaccination: newVaccinationId, // Vincula todas as vacinas ao mesmo cabeçalho
-            vaccines: vacina.vaccineId        // ID real da vacina vindo do Picker
+            vaccination: newVaccinationId, 
+            vaccines: vacina.vaccineId  
             };
 
             const responseItem = await fetch('http://127.0.0.1:8000/itens-vacina/', {
@@ -284,7 +282,7 @@ export default function AddAnimalScreen({ navigation }: any) {
 
         }
         // Sucesso Total
-        console.log("🏁 Chegou ao final do fluxo sem estourar erros catastróficos.");
+        console.log("🏁 Cadastro realizado com sucesso!");
         alert('Cadastro realizado com sucesso!');
         navigation.navigate('Admin');
       }

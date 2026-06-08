@@ -5,7 +5,7 @@ import { COLORS } from '../constants/theme';
 interface PetCardProps {
   name: string;
   photo: string;
-  breed: string;
+  breed_name: string;
   sex: string;
   characteristic: Array<string>;
   onPressButton: () => void;
@@ -17,7 +17,7 @@ const mapSex: { [key: string]: string } = {
     'F': 'Fêmea',
   };
 
-export default function PetCard({ name, photo, breed, sex, characteristic, isHome, onPressButton }: PetCardProps) {
+export default function PetCard({ name, photo, breed_name, sex, characteristic, isHome, onPressButton }: PetCardProps) {
   return (
      <View style={[styles.cardBase, isHome ? styles.cardHome : styles.cardAnimals]}>
       {photo ? (
@@ -34,7 +34,7 @@ export default function PetCard({ name, photo, breed, sex, characteristic, isHom
       
       <View style={styles.infoContainer}>
         <Text style={styles.petName}>{name}</Text>
-        <Text style={styles.petDetails}>{breed} • {sex ? (mapSex[sex.toUpperCase()] ?? sex) : '-'}</Text>
+        <Text style={styles.petDetails}>{breed_name} • {sex ? (mapSex[sex.toUpperCase()] ?? sex) : '-'}</Text>
         
         <Text style={styles.petTraits}>
           {characteristic && characteristic.length > 0 
