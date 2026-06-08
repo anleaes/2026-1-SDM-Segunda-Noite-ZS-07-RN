@@ -43,6 +43,8 @@ export default function AdminScreen({ navigation }: any) {
             
             {renderMenuButton("medkit-outline", "Adicionar Vacina", () => {navigation.navigate("AddVaccine")})}
             
+            {renderMenuButton("medkit-outline", "Adicionar Vacinação", () => {navigation.navigate("AddVaccination")})}
+            
             {renderMenuButton("shield-checkmark-outline", "Verificação de Adotantes", () => {navigation.navigate("")})}
 
             </View>
