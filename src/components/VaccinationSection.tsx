@@ -150,16 +150,15 @@ const styles = StyleSheet.create({
     fontWeight: '600'
   },    
   formCard: {
-    flex: 1,
     backgroundColor: COLORS.white,
     borderRadius: 12,
-    marginHorizontal: 15,
+    marginHorizontal: 0,
     marginVertical: 20,
-    padding: 20,
+    paddingHorizontal: 10,
     elevation: 3,
-    shadowColor: COLORS.dark,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05, shadowRadius: 4
+    // shadowColor: COLORS.dark,
+    // shadowOffset: { width: 0, height: 2 },
+    // shadowOpacity: 0.05, shadowRadius: 4
   },
 container: {
     flex: 1,
@@ -207,6 +206,15 @@ inputWrapper: {
     marginBottom: 14, 
     backgroundColor: COLORS.background
 },
+pickerWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.background,
+    borderWidth: 0,
+    paddingHorizontal: 0,
+    height: 40,
+    marginTop: 0,
+},
 inputIcon: { 
     marginRight: 8 
 },
@@ -214,7 +222,7 @@ input: {
     flex: 1, 
     height: 44, 
     color: COLORS.textDark, 
-    fontSize: 14 
+    fontSize: 14,
 },
 divider: { 
     height: 1, 
@@ -246,15 +254,7 @@ buttonText: {
     fontSize: 16, 
     fontWeight: 'bold' 
 },
-pickerWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.background,
-    borderWidth: 0,
-    paddingHorizontal: 0,
-    height: 40,
-    marginTop: 0,
-  },
+
   pickerText: {
     color: COLORS.grey,
   },

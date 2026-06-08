@@ -10,7 +10,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
-//import VaccinationSection, { VacinaItemState } from '../components/VaccinationSection';
+import VaccinationSection, { VaccineItemState } from '../components/VaccinationSection';
 
 export default function AddAnimalScreen({ navigation }: any) {
   const { token, employeeId } = useAuth();
@@ -24,7 +24,7 @@ export default function AddAnimalScreen({ navigation }: any) {
   const [color, setColor] = useState('');
   const [sterilized, setSterilized] = useState(false);
   const [adopted, setAdopted] = useState(false);
-  const [selectedCharacteristics, setselectedCharacteristics] = useState<number[]>([]);
+  const [selectedCharacteristics, setselectedCharacteristics] = useState<string[]>([]);
   const [photoUri, setPhotoUri] = useState<string | null>(null);
 
   const [specie, setSpecie] = useState([]);
@@ -36,34 +36,42 @@ export default function AddAnimalScreen({ navigation }: any) {
   const [vaccineList, setVaccineList] = useState([]);
   const [vaccinated, setVaccinated] = useState(false);
   const [weightAt, setWeightAt] = useState('');
-  const [loggedEmployeeId, setLoggedEmployeeId] = useState<number | null>(null);
-//   const [vaccinesApplied, setVaccinesApplied] = useState<VaccineItemState[]>([
-//         { id: Date.now(), vaccineId: '', dosage: '' }
-//         ]);
+  const loggedEmployeeId = employeeId ? employeeId : 81;
+  const [vaccinesApplied, setVaccinesApplied] = useState<VaccineItemState[]>([
+        { id: Date.now(), vaccineId: '', dosage: '' }
+        ]);
   
-  const toggleCharacteristic = (id: number) => {
-    if (selectedCharacteristics.includes(id)) {
-        setselectedCharacteristics(selectedCharacteristics.filter(item => item !== id));
+  const toggleCharacteristic = (name: string) => {
+    if (selectedCharacteristics.includes(name)) {
+        setselectedCharacteristics(selectedCharacteristics.filter(item => item !== name));
     } else {
-        setselectedCharacteristics([...selectedCharacteristics, id]);
+        setselectedCharacteristics([...selectedCharacteristics, name]);
     }
   };
   
-  useFocusEffect(
-    useCallback(() => {
-        setName('');
-        setSpecieId('');
-        setBreedId('');
-        setBirthDate('');
-        setSex('');
-        setSize('');
-        setColor('');
-        setSterilized(false);
-        setAdopted(false);
-        setselectedCharacteristics([]);
-        setPhotoUri(null);
-    }, [])
-  );
+  const converterDataParaDjango = (dataBR: string) => {
+    if (dataBR.includes('/')) {
+      const [dia, mes, ano] = dataBR.split('/');
+      return `${ano}-${mes}-${dia}`;
+    }
+    return dataBR;
+  };
+
+//   useFocusEffect(
+//     useCallback(() => {
+//         setName('');
+//         setSpecieId('');
+//         setBreedId('');
+//         setBirthDate('');
+//         setSex('');
+//         setSize('');
+//         setColor('');
+//         setSterilized(false);
+//         setAdopted(false);
+//         setselectedCharacteristics([]);
+//         setPhotoUri(null);
+//     }, [])
+//   );
 
   const pickImage = async () => {
   // Solicita permissão para acessar a galeria
@@ -75,7 +83,7 @@ export default function AddAnimalScreen({ navigation }: any) {
   }
 
   const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ['images'],
         allowsEditing: true, // Permite cortar a foto em quadrado, se quiser
         aspect: [4, 3],
         quality: 0.8, // Compacta um pouco para não pesar no banco Oracle
@@ -115,130 +123,171 @@ export default function AddAnimalScreen({ navigation }: any) {
         .catch(err => console.error("Erro ao buscar raças filtradas", err));
   }, [specieId]);
 
-  useEffect(() => {
-    const getLoggedEmployee = async () => {
-        try {
-        const idSalvo = await AsyncStorage.getItem('employeeId');
-        if (idSalvo !== null) {
-            setLoggedEmployeeId(parseInt(idSalvo));
-        }
-        } catch (error) {
-        console.error("Erro ao ler o ID do funcionário", error);
-        }
-    };
-
-    getLoggedEmployee();
-    }, []);
-
   const handleCadastrar = async () => {
+    console.log("=================== INÍCIO DO CADASTRO ===================");
+    console.log("Estado de isVaccinated no clique:", vaccinated);
+    console.log("Lista de vacinas no estado (vaccinesApplied):", vaccinesApplied);
     if (!name.trim() || !breedId || !sex.trim() || !size.trim()
-        || !color.trim() || !birthDate.trim() || !characteristics || !sterilized) {
+        || !color.trim() || !birthDate.trim() || !characteristics || !photoUri) {
+      console.log("Campos obrigatórios faltando:", { name, breedId, sex, size, 
+        color, birthDate, characteristics, sterilized, photoUri });
       Alert.alert('Atenção', 'Por favor, preencha todos os campos obrigatórios.');
+      setLoading(false);
       return;
-    }
-
-    if (!loggedEmployeeId) {
-        alert('Erro de autenticação: Funcionário logado não identificado. Tente refazer o login.');
-        return;
     }
 
     const dataDeHoje = new Date().toISOString().split('T')[0];
 
-    setLoading(true);
+    const formData = new FormData();
+
+    formData.append('name', name.trim());
+    formData.append('birth_date', converterDataParaDjango(birthDate.trim()));
+    formData.append('sex', sex);
+    formData.append('size', size);
+    formData.append('color', color.trim());
+    formData.append('sterilized', sterilized ? '1' : '0'); // FormData só aceita strings ou arquivos
+    formData.append('listedAt', dataDeHoje);
+    formData.append('breed', String(breedId));
+
+    selectedCharacteristics.forEach(name => {
+        formData.append('characteristic', String(name));
+    });
+
+    if (photoUri) {
+        const filename = photoUri.split('/').pop() || 'photo.jpg';
+        const match = /\.(\w+)$/.exec(filename);
+        const type = match ? `image/${match[1]}` : `image/jpeg`;
+
+        // 1. Checa se o app está rodando em ambiente Web (Navegador)
+        if (photoUri.startsWith('data:') || photoUri.startsWith('blob:') || typeof window !== 'undefined') {
+            try {
+                // 1. Força a descoberta ou criação de um nome de arquivo válido com extensão
+                let filename = photoUri.split('/').pop() || 'photo.jpg';
+                
+                // Garante que o nome do arquivo termina com alguma extensão padrão caso venha limpo
+                if (!filename.includes('.')) {
+                filename = `${filename}.jpg`;
+                }
+
+                const responseEspelho = await fetch(photoUri);
+                const blobArquivo = await responseEspelho.blob();
+                
+                // 2. CRUCIAL: Passe o 'filename' como o terceiro parâmetro aqui!
+                // formData.append(campo, arquivo, nome_do_arquivo_com_extensao)
+                formData.append('photo', blobArquivo, filename); 
+                
+                console.log("Foto anexada com sucesso no formato Web com nome:", filename);
+            } catch (errBlob) {
+                console.error("Erro ao gerar o blob da imagem na web:", errBlob);
+            }
+            } else {
+                // 2. Se for celular nativo (iOS/Android), mantém a estrutura anterior
+                formData.append('photo', {
+                uri: photoUri,
+                name: filename,
+                type: type,
+                } as any);
+                console.log("Foto anexada com sucesso no formato Mobile!");
+            }
+    }
 
     try {
+      setLoading(true);
+    
       const responseAnimal = await fetch('http://127.0.0.1:8000/animais/', {
         method: 'POST',
         headers: {
           'Authorization': `Token ${token}`,
-          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          name: name.trim(),
-          breed: breedId,
-          sex: sex.trim(),
-          size: size.trim(),
-          color: color.trim(),
-          birth_date: birthDate,
-          characteristics: characteristics,
-          sterilized: sterilized,
-          photo: 'https://example.com/photo.jpg',
-          listed_at: dataDeHoje,
-          adopted: adopted,
-        }),
+        body: formData,
       });
 
-      const resData = await responseAnimal.json();
-
       if (responseAnimal.ok) {
-        setName('');
-        setSpecie([]);
-        setBreedId('');
-        setSex('');
-        setSize('');
-        setColor('');
-        setBirthDate('');
-        setCharacteristics([]);
-        setSterilized(false);
-        setPhotoUri(null);
-        navigation.navigate('Admin')
+        // setName('');
+        // setSpecie([]);
+        // setBreedId('');
+        // setSex('');
+        // setSize('');
+        // setColor('');
+        // setBirthDate('');
+        // setCharacteristics([]);
+        // setSterilized(false);
+        // setPhotoUri(null);
+        console.log("Sucesso no cadastro:");
       } else {
-        Alert.alert('Erro ao cadastrar', resData.error || 'Verifique as informações fornecidas.');
+        const errData = await responseAnimal.json();
+        console.log("============== ERRO DO DJANGO ==============");
+        console.log(errData);
+        console.log("============================================");
+        //alert(`Erro: ${JSON.stringify(errData)}`);
+        //Alert.alert('Erro ao cadastrar', resData.error || 'Verifique as informações fornecidas.');
       }
 
+      console.log("pegando dados do animal");
       const newAnimal = await responseAnimal.json();
       const newAnimalId = newAnimal.id;
+      console.log(" Animal cadastrado com sucesso! ID:", newAnimalId);
 
       if (vaccinated) {
+        console.log("💉 [ENTROU] Código identificou isVaccinated = true. Iniciando cabeçalho...");
         const vaccinationPayload = {
             vaccinatedAt: dataDeHoje,
             weight_at: weightAt ? parseFloat(weightAt) : null,
             animal: newAnimalId, // ID que o banco acabou de retornar do animal
             employee: loggedEmployeeId,   // ID do context que corrigimos no primeiro passo
         };
-        
+        console.log("Enviando payload de Vaccination:", vaccinationPayload);
         const responseVaccination = await fetch('http://127.0.0.1:8000/vacinacoes/', {
             method: 'POST',
             headers: {
             'Authorization': `Token ${token}`,
-            'Content-Type': 'application/json'},
+            'Content-Type': 'application/json'
+            },
             body: JSON.stringify(vaccinationPayload),
         });
+        console.log("Status da resposta da Vaccination:", responseVaccination.status);
 
         if (!responseVaccination.ok) {
-            alert('Animal cadastrado, , mas falhou ao criar o registro de vacinação.');
-            navigation.navigate('Admin');
+            const errVac = await responseVaccination.text();
+            console.log('Animal cadastrado, mas falhou ao criar o registro de vacinação.');
+            console.log("❌ Erro no cabeçalho Vaccination:", errVac);
             return;
         }
         
         const newVaccination = await responseVaccination.json();
         const newVaccinationId = newVaccination.id;
+        console.log(" Cabeçalho de vacinação criado! ID:", newVaccinationId);
+        console.log("🔄 Iniciando loop para gravar os itens de vacina...");
 
         const dataValidade = new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0];
 
-        // for (const vacina of vaccinesApplied) {
-        //     const vaccineItemPayload = {
-        //     expiration_date: dataValidade,
-        //     dosage: vacina.dosage.trim(),
-        //     vaccination: newVaccinationId, // Vincula todas as vacinas ao mesmo cabeçalho
-        //     vaccines: vacina.vaccineId        // ID real da vacina vindo do Picker
-        //     };
+        for (const vacina of vaccinesApplied) {
+            const vaccineItemPayload = {
+            expiration_date: converterDataParaDjango(dataValidade), // Data de validade 1 ano a partir de hoje
+            dosage: vacina.dosage.trim(),
+            vaccination: newVaccinationId, // Vincula todas as vacinas ao mesmo cabeçalho
+            vaccines: vacina.vaccineId        // ID real da vacina vindo do Picker
+            };
 
-        const responseItem = await fetch('http://127.0.0.1:8000/itens-vacina/', {
-            method: 'POST',
-            headers: { 'Authorization': `Token ${token}`, 'Content-Type': 'application/json' },
-            //body: JSON.stringify({vaccineItemPayload}),
-        });
+            const responseItem = await fetch('http://127.0.0.1:8000/itens-vacina/', {
+                method: 'POST',
+                headers: { 'Authorization': `Token ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify(vaccineItemPayload),
+            });
 
-        if (!responseItem.ok) {
-            alert('Animal e evento de vacinação criados, mas houve um erro ao vincular a vacina específica.');
+        if (responseItem.ok) {
+          console.log(` Item de vacina (ID: ${vacina.vaccineId}) salvo com sucesso!`);
+        } else {
+          const errItem = await responseItem.text();
+          console.log(`❌ Erro ao salvar o item da vacina ID ${vacina.vaccineId}:`, errItem);
         }
 
         }
         // Sucesso Total
+        console.log("🏁 Chegou ao final do fluxo sem estourar erros catastróficos.");
         alert('Cadastro realizado com sucesso!');
         navigation.navigate('Admin');
-
+      }
     } catch (error) {
       Alert.alert('Erro', 'Não foi possível conectar ao servidor.');
     } finally {
@@ -356,15 +405,16 @@ export default function AddAnimalScreen({ navigation }: any) {
           <Text style={styles.sectionTitle}>Características</Text>
           <View style={styles.chipsContainer}>
             {characteristics.map((item: any) => {
-                const isSelected = selectedCharacteristics.includes(item.id);
+                const nomeItem = item.name;
+                const isSelected = selectedCharacteristics.includes(nomeItem);
                 return (
                 <TouchableOpacity
                     key={item.id}
                     style={[styles.chip, isSelected && styles.chipSelected]}
-                    onPress={() => toggleCharacteristic(item.id)}
+                    onPress={() => toggleCharacteristic(nomeItem)}
                 >
                     <Text style={[styles.chipText, isSelected && styles.chipTextSelected]}>
-                    {item.name}
+                    {nomeItem}
                     </Text>
                 </TouchableOpacity>
                 );
@@ -396,18 +446,16 @@ export default function AddAnimalScreen({ navigation }: any) {
             />
           </View>
           {vaccinated && (
-            <> console.log("Exibir seção de vacinação")
-            </>
-            // <VaccinationSection
-            //     vaccinesApplied={vaccinesApplied}
-            //     setVaccinesApplied={setVaccinesApplied}
-            //     weightAt={weightAt}
-            //     setWeightAt={setWeightAt}
-            //     listaVacinas={vaccineList}
-            //     renderInput={renderInput}
-            //     COLORS={COLORS}
-            //     stylesPai={styles}
-            // />
+            <VaccinationSection
+                vaccinesApplied={vaccinesApplied}
+                setVaccinesApplied={setVaccinesApplied}
+                weightAt={weightAt}
+                setWeightAt={setWeightAt}
+                vaccineList={vaccineList}
+                renderInput={renderInput as any}
+                COLORS={COLORS}
+                stylesPai={styles}
+            />
             )}
           <View style={styles.divider} />
           

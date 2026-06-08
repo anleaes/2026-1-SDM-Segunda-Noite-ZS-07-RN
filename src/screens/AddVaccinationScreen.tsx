@@ -22,6 +22,7 @@ export default function AddVaccinationScreen({ navigation }: { navigation: any }
   const [vaccinesApplied, setVaccinesApplied] = useState<VaccineItemState[]>([
     { id: Date.now(), vaccineId: '', dosage: '' }
   ]);
+  const loggedEmployeeId = employeeId ? employeeId : 81; // Supondo que o ID do funcionário logado esteja disponível no contexto de autenticação
   
   useFocusEffect(
     useCallback(() => {
@@ -74,7 +75,7 @@ export default function AddVaccinationScreen({ navigation }: { navigation: any }
           vaccinatedAt: dataDeHoje,
           weight_at: weightAt ? parseFloat(weightAt) : null,
           animal: selectedAnimalId,
-          employee: employeeId
+          employee: loggedEmployeeId,
         }),
       });
 
@@ -134,16 +135,18 @@ export default function AddVaccinationScreen({ navigation }: { navigation: any }
             </View>
         </View>
 
-        <VaccinationSection
-            vaccinesApplied={vaccinesApplied}
-            setVaccinesApplied={setVaccinesApplied}
-            weightAt={weightAt}
-            setWeightAt={setWeightAt}
-            vaccineList={listaVacinas}
-            renderInput={VaccinationRenderInput as any} // Passe seu renderInput padrão aqui
-            COLORS={{ textDark: '#333' }}
-            stylesPai={{ label: {fontWeight: '600'}, inputWrapper: {borderWidth: 1, borderColor: '#ccc', borderRadius: 8, height: 50, marginBottom: 15}, pickerText: {} }}
-        />
+        <View style={styles.vaccinationCard}>
+            <VaccinationSection
+                vaccinesApplied={vaccinesApplied}
+                setVaccinesApplied={setVaccinesApplied}
+                weightAt={weightAt}
+                setWeightAt={setWeightAt}
+                vaccineList={listaVacinas}
+                renderInput={VaccinationRenderInput as any} // Passe seu renderInput padrão aqui
+                COLORS={{ textDark: '#333' }}
+                stylesPai={{ label: {fontWeight: '600'}, inputWrapper: {borderWidth: 1, borderColor: '#ccc', borderRadius: 8, height: 50, marginBottom: 15}, pickerText: {} }}
+            />
+        </View>
 
         <TouchableOpacity style={styles.button} onPress={handleSalvarVacinaIsolada} disabled={loading}>
           {loading ? <ActivityIndicator color={COLORS.white} /> : 
@@ -194,6 +197,19 @@ formCard: {
     marginBottom: 0,
     padding: 20,
     elevation: 3,
+    shadowColor: COLORS.dark,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05, shadowRadius: 4
+},
+vaccinationCard: {
+    flex: 1,
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    marginHorizontal: 15,
+    marginVertical: 20,
+    marginBottom: 0,
+    paddingHorizontal: 10,
+    paddingVertical: 0,
     shadowColor: COLORS.dark,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05, shadowRadius: 4
