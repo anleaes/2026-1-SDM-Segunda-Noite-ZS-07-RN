@@ -125,6 +125,9 @@ const DrawerNavigator = () => {
           drawerItemStyle: isAdmin ? undefined : { display: 'none' },
           drawerIcon: ({ color, size }) => <Ionicons name="shield-checkmark-outline" size={size} color={color} />,
           title: 'Solicitações de Adoção',
+        }}
+      />
+      <Drawer.Screen
         name="AddVaccine"
         component={AddVaccineScreen}
         options={{
