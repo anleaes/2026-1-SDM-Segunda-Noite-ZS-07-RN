@@ -176,6 +176,13 @@ export default function AdoptionFormScreen({ navigation, route }: any) {
       let errorMessage = `Status ${response.status}`;
       try {
         const resData = JSON.parse(text);
+        if (resData?.animal) {
+          const animalErrors: string[] = Array.isArray(resData.animal)
+            ? resData.animal
+            : [String(resData.animal)];
+          Alert.alert('Atenção', animalErrors[0]);
+          return;
+        }
         errorMessage = JSON.stringify(resData, null, 2);
       } catch {
         errorMessage = text.length > 500 ? text.slice(0, 500) + '...' : text;

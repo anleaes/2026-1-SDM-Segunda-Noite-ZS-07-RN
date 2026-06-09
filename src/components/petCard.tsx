@@ -10,6 +10,7 @@ interface PetCardProps {
   characteristic: Array<string>;
   onPressButton: () => void;
   isHome?: boolean;
+  adopted?: boolean;
 }
 
 const mapSex: { [key: string]: string } = {
@@ -17,9 +18,9 @@ const mapSex: { [key: string]: string } = {
     'F': 'Fêmea',
   };
 
-export default function PetCard({ name, photo, breed_name, sex, characteristic, isHome, onPressButton }: PetCardProps) {
+export default function PetCard({ name, photo, breed_name, sex, characteristic, isHome, onPressButton, adopted }: PetCardProps) {
   return (
-     <View style={[styles.cardBase, isHome ? styles.cardHome : styles.cardAnimals]}>
+     <View style={[styles.cardBase, isHome ? styles.cardHome : styles.cardAnimals, adopted && styles.cardAdopted]}>
       {photo ? (
         <Image 
           source={{ uri: photo }} 
@@ -44,9 +45,15 @@ export default function PetCard({ name, photo, breed_name, sex, characteristic, 
 
       </View>
 
-      <TouchableOpacity style={styles.button} onPress={onPressButton}>
-        <Text style={styles.buttonText}>Ver mais</Text>
-      </TouchableOpacity>
+      {adopted ? (
+        <View style={styles.buttonAdopted}>
+          <Text style={styles.buttonAdoptedText}>Adotado</Text>
+        </View>
+      ) : (
+        <TouchableOpacity style={styles.button} onPress={onPressButton}>
+          <Text style={styles.buttonText}>Ver mais</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -115,6 +122,21 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: 'white',
+    fontWeight: 'bold',
+  },
+  cardAdopted: {
+    opacity: 0.55,
+  },
+  buttonAdopted: {
+    backgroundColor: COLORS.grey,
+    padding: 10,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
+    alignItems: 'center',
+    marginTop: 'auto',
+  },
+  buttonAdoptedText: {
+    color: COLORS.textLight,
     fontWeight: 'bold',
   },
 });
