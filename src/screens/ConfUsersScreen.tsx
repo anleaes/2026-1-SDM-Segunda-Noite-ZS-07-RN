@@ -10,6 +10,7 @@ interface Usuario {
   id: number;
   name: string;
   role: string;
+  position?: string;
   address?: string;
   username?: string;
 }
@@ -33,7 +34,7 @@ export default function GerenciarUsuariosScreen({ navigation }: any) {
   const [usuarioSelecionado, setUsuarioSelecionado] = useState<Usuario | null>(null);
 
   const [novoCargo, setNovoCargo] = useState('');
-  const [novoNivel, setNovoNivel] = useState<'admin' | 'moderador'>('moderador');
+  const [novoNivel, setNovoNivel] = useState<'Administrador' | 'Moderador'>('Moderador');
   const [novaSenha, setNovaSenha] = useState('');
   const [novoEndereco, setNovoEndereco] = useState('');
   const [novoUsername, setNovoUsername] = useState('');
@@ -63,11 +64,14 @@ export default function GerenciarUsuariosScreen({ navigation }: any) {
         const dataFuncionarios = await respFuncionarios.json();
         const dataClientes = await respClientes.json();
 
+        console.log(dataFuncionarios)
+
         const funcionariosFormatados = dataFuncionarios.map((emp: any) => ({
           id: emp.register,
           name: `${emp.first_name} ${emp.last_name}`,
-          role: emp.position || 'Equipe',
-          username: emp.username || 'Sem usuário cadastrado',
+          role: emp.role,
+          position: emp.position || 'Sem Cargo',
+          username: emp.username || 'Sem usuário',
         }));
         
         const statusIniciaisFunc: { [key: number]: boolean } = {};
@@ -80,7 +84,7 @@ export default function GerenciarUsuariosScreen({ navigation }: any) {
           name: `${cliente.first_name} ${cliente.last_name}`,
           role: 'user',
           address: cliente.address || 'Endereço não cadastrado',
-          username: cliente.username || 'Sem usuário cadastrado',
+          username: cliente.username || 'Sem usuário',
         }));
 
         const statusLocal: { [key: number]: boolean } = {};
@@ -157,8 +161,8 @@ export default function GerenciarUsuariosScreen({ navigation }: any) {
 
   const abrirModalCargo = (user: Usuario) => {
     setUsuarioSelecionado(user);
-    setNovoCargo(user.role);
-    setNovoNivel('moderador');
+    setNovoCargo(user.position || '');
+    setNovoNivel((user.role as 'Administrador' | 'Moderador') || 'Moderador');
     setModalCargoVisible(true);
   };
 
@@ -463,7 +467,7 @@ export default function GerenciarUsuariosScreen({ navigation }: any) {
                             <Ionicons name="briefcase-outline" size={32} color={COLORS.textDark} style={{ marginLeft: 2 }} />
                             <View style={styles.userInfoText}>
                               <Text style={styles.userName}>{user.name}</Text>
-                              <Text style={styles.userSub}>{user.role}</Text>
+                              <Text style={styles.userSub}>{user.position}</Text>
                             </View>
                           </View>
                           <Ionicons name={isOpen ? "chevron-up" : "chevron-down"} size={20} color={COLORS.textLight} />
@@ -532,23 +536,23 @@ export default function GerenciarUsuariosScreen({ navigation }: any) {
             <Text style={styles.modalTitle}>Alterar Função</Text>
             <Text style={styles.modalSubtitle}>Funcionário: {usuarioSelecionado?.name}</Text>
 
-            <Text style={styles.inputLabel}>Nome do Cargo (ex: Veterinário)</Text>
+            <Text style={styles.inputLabel}>Nome do Cargo</Text>
             <TextInput style={styles.input} value={novoCargo} onChangeText={setNovoCargo} />
 
             <Text style={styles.inputLabel}>Nível de Acesso no Sistema</Text>
             <View style={styles.roleSelector}>
               <TouchableOpacity 
-                style={[styles.roleBtn, novoNivel === 'moderador' && styles.roleBtnActive]} 
-                onPress={() => setNovoNivel('moderador')}
+                style={[styles.roleBtn, novoNivel === 'Moderador' && styles.roleBtnActive]} 
+                onPress={() => setNovoNivel('Moderador')}
               >
-                <Text style={novoNivel === 'moderador' ? styles.roleTextActive : styles.roleText}>Moderador</Text>
+                <Text style={novoNivel === 'Moderador' ? styles.roleTextActive : styles.roleText}>Moderador</Text>
               </TouchableOpacity>
               
               <TouchableOpacity 
-                style={[styles.roleBtn, novoNivel === 'admin' && styles.roleBtnActive]} 
-                onPress={() => setNovoNivel('admin')}
+                style={[styles.roleBtn, novoNivel === 'Administrador' && styles.roleBtnActive]} 
+                onPress={() => setNovoNivel('Administrador')}
               >
-                <Text style={novoNivel === 'admin' ? styles.roleTextActive : styles.roleText}>Administrador</Text>
+                <Text style={novoNivel === 'Administrador' ? styles.roleTextActive : styles.roleText}>Administrador</Text>
               </TouchableOpacity>
             </View>
 
