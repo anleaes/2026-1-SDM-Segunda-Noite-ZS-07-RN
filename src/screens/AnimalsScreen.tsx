@@ -14,6 +14,7 @@ interface PetInfo {
   breed_name: string;
   sex: string;
   characteristic: Array<string>;
+  adopted?: boolean;
   isHome?: boolean;
 }
 
@@ -30,7 +31,7 @@ export default function AnimalsScreen() {
         const response = await fetch('http://127.0.0.1:8000/animais/');
       
         const data = await response.json();
-        setAnimais(data);
+        setAnimais([...data].sort((a, b) => (a.adopted === b.adopted ? 0 : a.adopted ? 1 : -1)));
     } catch (error) {
         console.error("Erro ao buscar os animais do back-end:", error);
     } finally {
@@ -105,7 +106,8 @@ export default function AnimalsScreen() {
                           sex={pet.sex}
                           characteristic={pet.characteristic}
                           isHome={false}
-                          onPressButton={() => navigation.navigate('InfoAnimalScreen', { animalId: pet.id })}
+                          adopted={pet.adopted}
+                          onPressButton={() => !pet.adopted && navigation.navigate('InfoAnimalScreen', { animalId: pet.id })}
                       />
                   ))}
               </View>
