@@ -33,6 +33,8 @@ export default function AdminScreen({ navigation }: any) {
             
             {renderMenuButton("people-outline", "Gerenciar Usuários", () => {navigation.navigate("ConfUsers")})}
 
+            {renderMenuButton("paw-outline", "Gerenciar Animais", () => {navigation.navigate("ConfAnimals")})}
+
             {renderMenuButton("person-add-outline", "Cadastrar Funcionário", () => {navigation.navigate("CreateEmp")})}
 
             {renderMenuButton("person-add-outline", "Cadastrar Cliente", () => {navigation.navigate("CreateAdp")})}
@@ -43,7 +45,6 @@ export default function AdminScreen({ navigation }: any) {
             
             {renderMenuButton("medkit-outline", "Adicionar Vacina", () => {navigation.navigate("AddVaccine")})}
             
-            {renderMenuButton("shield-checkmark-outline", "Verificação de Adotantes", () => {navigation.navigate("AdoptionRequests")})}
             {renderMenuButton("shield-checkmark-outline", "Adicionar Vacinação", () => {navigation.navigate("AddVaccination")})}
             
 

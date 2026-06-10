@@ -6,6 +6,7 @@ import InfoAnimalScreen from '../screens/InfoAnimalScreen';
 import AnimalsScreen from '../screens/AnimalsScreen';
 import AdminScreen from '../screens/AdminScreen';
 import ConfUsersScreen from '../screens/ConfUsersScreen';
+import ConfAnimalsScreen from '../screens/ConfAnimalsScreen';
 import CreateEmployeeScreen from '../screens/CreateEmployeeScreen';
 import CreateAdopterScreen from '../screens/CreateAdopterScreen';
 import AdoptionFormScreen from '../screens/AdoptionFormScreen';
@@ -24,6 +25,7 @@ export type DrawerParamList = {
   InfoAnimalScreen: { animalId: string | number }; 
   Animais: undefined;
   ConfUsers: undefined;
+  ConfAnimals: undefined;
   CreateEmp: undefined;
   CreateAdp: undefined;
   Admin: undefined;
@@ -84,6 +86,13 @@ const DrawerNavigator = () => {
       <Drawer.Screen
         name="ConfUsers"
         component={ConfUsersScreen}
+        options={{
+          drawerItemStyle: { display: 'none' },
+        }}
+      />
+      <Drawer.Screen
+        name="ConfAnimals"
+        component={ConfAnimalsScreen}
         options={{
           drawerItemStyle: { display: 'none' },
         }}

@@ -64,8 +64,6 @@ export default function GerenciarUsuariosScreen({ navigation }: any) {
         const dataFuncionarios = await respFuncionarios.json();
         const dataClientes = await respClientes.json();
 
-        console.log(dataFuncionarios)
-
         const funcionariosFormatados = dataFuncionarios.map((emp: any) => ({
           id: emp.register,
           name: `${emp.first_name} ${emp.last_name}`,
